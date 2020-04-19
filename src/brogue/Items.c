@@ -2916,7 +2916,7 @@ char displayInventory(unsigned short categoryMask,
 
                     switch (actionKey) {
                         case APPLY_KEY:
-                            apply(theItem, true);
+                         apply(theItem, false, true);
                             break;
                         case EQUIP_KEY:
                             equip(theItem);
@@ -5954,7 +5954,25 @@ boolean playerCancelsBlinking(const short originLoc[2], const short targetLoc[2]
     return false;
 }
 
-boolean useStaffOrWand(item *theItem, boolean *commandsRecorded) {
+boolean staffOrWandSupportsAutoApply(item *theItem) {
+    if (theItem->kind == STAFF_BLINKING ||
+        theItem->kind == STAFF_TUNNELING ||
+        theItem->kind == STAFF_OBSTRUCTION ||
+        theItem->kind == WAND_BECKONING ||
+        theItem->kind == WAND_DOMINATION ||
+        theItem->kind == WAND_EMPOWERMENT ||
+        theItem->kind == WAND_INVISIBILITY ||
+        theItem->kind == WAND_NEGATION ||
+        theItem->kind == WAND_PLENTY ||
+        theItem->kind == WAND_POLYMORPH ||
+        theItem->kind == WAND_SLOW ||
+        theItem->kind == WAND_TELEPORT) {
+        return false;
+    }
+    return true;
+}
+
+boolean useStaffOrWand(item *theItem, boolean autoApply, boolean *commandsRecorded) {
     char buf[COLS], buf2[COLS];
     unsigned char command[10];
     short zapTarget[2], originLoc[2], maxDistance, c;
@@ -6019,7 +6037,15 @@ boolean useStaffOrWand(item *theItem, boolean *commandsRecorded) {
 
     originLoc[0] = player.xLoc;
     originLoc[1] = player.yLoc;
-    confirmedTarget = chooseTarget(zapTarget, maxDistance, false, autoTarget, targetAllies, passThroughCreatures, &trajectoryHiliteColor);
+
+    if (autoApply && staffOrWandSupportsAutoApply(theItem) && creatureIsTargetable(rogue.lastTarget)) {
+        confirmedTarget = true;
+        zapTarget[0] = rogue.lastTarget->xLoc;
+        zapTarget[1] = rogue.lastTarget->yLoc;
+    } else {
+        confirmedTarget = chooseTarget(zapTarget, maxDistance, false, autoTarget, targetAllies, passThroughCreatures, &trajectoryHiliteColor);
+    }
+    
     if (confirmedTarget
         && boltKnown
         && theBolt.boltEffect == BE_BLINKING
@@ -6066,6 +6092,11 @@ boolean useStaffOrWand(item *theItem, boolean *commandsRecorded) {
             playerTurnEnded();
             return false;
         }
+
+        if(staffOrWandSupportsAutoApply(theItem)) {
+            rogue.lastItemApplied = theItem;
+        }
+
     } else {
         return false;
     }
@@ -6154,7 +6185,7 @@ void useCharm(item *theItem) {
     }
 }
 
-void apply(item *theItem, boolean recordCommands) {
+void apply(item *theItem, boolean autoApply, boolean recordCommands) {
     char buf[COLS * 3], buf2[COLS * 3];
     boolean commandsRecorded, revealItemType;
     unsigned char command[10] = "";
@@ -6243,7 +6274,7 @@ void apply(item *theItem, boolean recordCommands) {
             break;
         case STAFF:
         case WAND:
-            if (!useStaffOrWand(theItem, &commandsRecorded)) {
+            if (!useStaffOrWand(theItem, autoApply, &commandsRecorded)) {
                 return;
             }
             break;

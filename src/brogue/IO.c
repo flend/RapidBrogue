@@ -2465,7 +2465,12 @@ void executeKeystroke(signed long keystroke, boolean controlKey, boolean shiftKe
             drop(NULL);
             break;
         case APPLY_KEY:
-            apply(NULL, true);
+            apply(NULL, false, true);
+        break;
+        case REAPPLY_KEY:
+            if (rogue.lastItemApplied != NULL && itemIsCarried(rogue.lastItemApplied)) {
+                apply(rogue.lastItemApplied, true, true);
+            }
             break;
         case THROW_KEY:
             throwCommand(NULL, false);
@@ -3685,7 +3690,7 @@ void printHelpScreen() {
         "hjklyubn, arrow keys, or numpad  ****move or attack (control or shift to run)",
         "",
         " a/e/r/t/d/c/R  ****apply/equip/remove/throw/drop/call/relabel an item",
-        "             T  ****re-throw last item at last monster",
+        "          T, A  ****re-throw / re-apply last item at last monster",
         "i, right-click  ****view inventory",
         "             D  ****list discovered items",
         "",
@@ -3694,7 +3699,7 @@ void printHelpScreen() {
         "             s  ****search for secret doors and traps",
         "          <, >  ****travel to stairs",
         "             x  ****auto-explore (control-x: fast forward)",
-        "             A  ****autopilot (control-A: fast forward)",
+        "             P  ****autopilot (control-P: fast forward)",
         "             M  ****display old messages",
         "",
         "             S  ****suspend game and quit",

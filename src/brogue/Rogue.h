@@ -1125,6 +1125,7 @@ enum tileFlags {
 #define APPLY_KEY           'a'
 #define THROW_KEY           't'
 #define RETHROW_KEY         'T'
+#define REAPPLY_KEY         'A'
 #define RELABEL_KEY         'R'
 #define TRUE_COLORS_KEY     '\\'
 #define AGGRO_DISPLAY_KEY   ']'
@@ -1135,7 +1136,7 @@ enum tileFlags {
 #define HELP_KEY            '?'
 #define DISCOVERIES_KEY     'D'
 #define EXPLORE_KEY         'x'
-#define AUTOPLAY_KEY        'A'
+#define AUTOPLAY_KEY        'P'
 #define SEED_KEY            '~'
 #define EASY_MODE_KEY       '&'
 #define ESCAPE_KEY          '\033'
@@ -2271,6 +2272,7 @@ typedef struct playerCharacter {
     short cursorLoc[2];                 // used for the return key functionality
     creature *lastTarget;               // to keep track of the last monster the player has thrown at or zapped
     item *lastItemThrown;
+    item *lastItemApplied;              // to keep track of the last reapply-able item the user applied
     short rewardRoomsGenerated;         // to meter the number of reward machines
     short machineNumber;                // so each machine on a level gets a unique number
     short sidebarLocationList[ROWS*2][2];   // to keep track of which location each line of the sidebar references
@@ -3025,6 +3027,8 @@ extern "C" {
                                      short x, short y,
                                      boolean grid[DCOLS][DROWS],
                                      boolean deterministic);
+    boolean staffOrWandSupportsAutoApply(item *theItem);    
+    boolean useStaffOrWand(item *theItem, boolean autoApply, boolean *commandsRecorded);
 
     // Grid operations
     short **allocGrid();
@@ -3062,7 +3066,7 @@ extern "C" {
     void makeMonsterDropItem(creature *monst);
     void throwCommand(item *theItem, boolean autoThrow);
     void relabel(item *theItem);
-    void apply(item *theItem, boolean recordCommands);
+    void apply(item *theItem, boolean autoApply, boolean recordCommands);
     boolean itemCanBeCalled(item *theItem);
     void call(item *theItem);
     short chooseVorpalEnemy();

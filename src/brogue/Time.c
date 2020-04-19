@@ -813,7 +813,7 @@ void checkNutrition() {
             if (theItem->category == FOOD) {
                 sprintf(buf, "unable to control your hunger, you eat a %s.", (theItem->kind == FRUIT ? "mango" : "ration of food"));
                 messageWithColor(buf, &itemMessageColor, true);
-                apply(theItem, false);
+                apply(theItem, false, false);
                 break;
             }
         }
