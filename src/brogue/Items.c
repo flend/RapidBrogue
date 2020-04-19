@@ -5955,19 +5955,18 @@ boolean playerCancelsBlinking(const short originLoc[2], const short targetLoc[2]
 }
 
 boolean staffOrWandSupportsAutoApply(item *theItem) {
-    if (theItem->kind == STAFF_BLINKING ||
-        theItem->kind == STAFF_TUNNELING ||
-        theItem->kind == STAFF_OBSTRUCTION ||
-        theItem->kind == WAND_BECKONING ||
-        theItem->kind == WAND_DOMINATION ||
-        theItem->kind == WAND_EMPOWERMENT ||
-        theItem->kind == WAND_INVISIBILITY ||
-        theItem->kind == WAND_NEGATION ||
-        theItem->kind == WAND_PLENTY ||
-        theItem->kind == WAND_POLYMORPH ||
-        theItem->kind == WAND_SLOW ||
-        theItem->kind == WAND_TELEPORT) {
-        return false;
+    switch (theItem->category) {
+        case WAND:
+            return false;
+        case STAFF:
+            switch(theItem->kind) {
+                case STAFF_BLINKING:
+                    return false;
+                case STAFF_TUNNELING:
+                    return false;
+                case STAFF_OBSTRUCTION:
+                    return false;
+            }
     }
     return true;
 }
