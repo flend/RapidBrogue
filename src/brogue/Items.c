@@ -2396,6 +2396,12 @@ void itemDetails(char *buf, item *theItem) {
                     strcat(buf, buf2);
                 }
             }
+            // re-apply status
+            if (theItem == rogue.lastItemApplied) {
+                sprintf(buf2, "This staff was the last staff used and may be re-applied.");
+                strcat(buf, "\n\n");
+                strcat(buf, buf2);
+            }
             break;
 
         case WAND:
