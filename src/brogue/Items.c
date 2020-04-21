@@ -2754,11 +2754,10 @@ char displayInventory(unsigned short categoryMask,
 
             // The first '*' is the magic detection symbol, e.g. '-' for non-magical.
             // The second '*' is the item character, e.g. ':' for food.
-            char itemPrefix = (rogue.lastItemThrown == theItem || rogue.lastItemApplied == theItem) ? ']' : 
-                    (theItem->flags & ITEM_PROTECTED ? '}' : closeParen);
             sprintf(buttons[i].text, " %c%c %s* %s* %s%s%s%s",
                     KEYBOARD_LABELS ? theItem->inventoryLetter : ' ',
-                    itemPrefix,
+                    (rogue.lastItemThrown == theItem || rogue.lastItemApplied == theItem) ? ']' : 
+                    (theItem->flags & ITEM_PROTECTED ? '}' : closeParen),
                     magicEscapePtr,
                     (buttons[i].flags & B_HOVER_ENABLED) ? yellowColorEscapeSequence : darkYellowColorEscapeSequence,
                     (buttons[i].flags & B_HOVER_ENABLED) ? whiteColorEscapeSequence : grayColorEscapeSequence,
@@ -2767,11 +2766,10 @@ char displayInventory(unsigned short categoryMask,
                     (theItem->flags & ITEM_EQUIPPED ? ((theItem->category & WEAPON) ? " (in hand) " : " (worn) ") : ""));
             buttons[i].symbol[1] = theItem->displayChar;
         } else {
-            char itemPrefix = (rogue.lastItemThrown == theItem || rogue.lastItemApplied == theItem) ? ']' : 
-                    (theItem->flags & ITEM_PROTECTED ? '}' : closeParen);
             sprintf(buttons[i].text, " %c%c %s%s* %s%s%s%s", // The '*' is the item character, e.g. ':' for food.
                     KEYBOARD_LABELS ? theItem->inventoryLetter : ' ',
-                    itemPrefix,
+                    (rogue.lastItemThrown == theItem || rogue.lastItemApplied == theItem) ? ']' : 
+                    (theItem->flags & ITEM_PROTECTED ? '}' : closeParen),
                     (magicDetected ? "  " : ""), // For proper spacing when this item is not detected but another is.
                     (buttons[i].flags & B_HOVER_ENABLED) ? yellowColorEscapeSequence : darkYellowColorEscapeSequence,
                     (buttons[i].flags & B_HOVER_ENABLED) ? whiteColorEscapeSequence : grayColorEscapeSequence,
