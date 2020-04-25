@@ -3690,7 +3690,7 @@ void printHelpScreen() {
         "hjklyubn, arrow keys, or numpad  ****move or attack (control or shift to run)",
         "",
         " a/e/r/t/d/c/R  ****apply/equip/remove/throw/drop/call/relabel an item",
-        "          T, A  ****re-throw / re-apply last item at last monster",
+        "          T/A  ****re-throw last item / re-apply last staff at last monster",
         "i, right-click  ****view inventory",
         "             D  ****list discovered items",
         "",

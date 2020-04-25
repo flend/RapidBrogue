@@ -5967,6 +5967,16 @@ boolean staffOrWandSupportsAutoApply(item *theItem) {
         case WAND:
             return false;
         case STAFF:
+            return true;
+    }
+    return true;
+}
+
+boolean staffOrWandSupportsAutoApplyingOnLastTarget(item *theItem) {
+    switch (theItem->category) {
+        case WAND:
+            return false;
+        case STAFF:
             switch(theItem->kind) {
                 case STAFF_BLINKING:
                     return false;
@@ -6045,7 +6055,7 @@ boolean useStaffOrWand(item *theItem, boolean autoApply, boolean *commandsRecord
     originLoc[0] = player.xLoc;
     originLoc[1] = player.yLoc;
 
-    if (autoApply && staffOrWandSupportsAutoApply(theItem) && creatureIsTargetable(rogue.lastTarget)) {
+    if (autoApply && staffOrWandSupportsAutoApplyingOnLastTarget(theItem) && creatureIsTargetable(rogue.lastTarget)) {
         confirmedTarget = true;
         zapTarget[0] = rogue.lastTarget->xLoc;
         zapTarget[1] = rogue.lastTarget->yLoc;
