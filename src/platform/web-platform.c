@@ -29,6 +29,7 @@
 
 //Custom events
 #define REFRESH_SCREEN 50
+#define QUERY_GRAPHICS 51
 
 enum StatusTypes
 {
@@ -46,8 +47,11 @@ static int wfd, rfd;
 static FILE *logfile;
 static unsigned char outputBuffer[OUTPUT_BUFFER_SIZE];
 static int outputBufferPos = 0;
-static int refreshScreenOnly = 0;
+static boolean showGraphics = false;
+static boolean platformSetup = false;
 
+static void setupPlatform();
+static void closePlatform();
 static void gameLoop();
 static void openLogfile();
 static void closeLogfile();
@@ -57,15 +61,26 @@ static int readFromSocket(unsigned char *buf, int size);
 static void writeToSocket(unsigned char *buf, int size);
 static void flushOutputBuffer();
 
-static void gameLoop() {
+static void setupPlatform() {
+    if (platformSetup) {
+        return;
+    }
     openLogfile();
     writeToLog("Logfile started\n");
-
     setupSockets();
+    platformSetup = true;
+}
 
-    rogueMain();
-
+static void closePlatform() {
+    writeToLog("Logfile closed\n");
     closeLogfile();
+}
+
+static void gameLoop() {
+    
+    setupPlatform();
+    rogueMain();
+    closePlatform();
 }
 
 static void openLogfile() {
@@ -135,6 +150,7 @@ static void writeToSocket(unsigned char *buf, int size)
 }
 
 // Map characters which are missing or rendered as emoji on some platforms
+/*
 static unsigned int fixUnicode(unsigned int code) {
     switch (code) {
         case U_ARIES: return 0x03C8;
@@ -144,20 +160,20 @@ static unsigned int fixUnicode(unsigned int code) {
         default: return code;
     }
 }
-
+*/
 static void web_plotChar(enum displayGlyph inputChar,
                          short xLoc, short yLoc,
                          short foreRed, short foreGreen, short foreBlue,
                          short backRed, short backGreen, short backBlue) {
     unsigned char outputBuffer[OUTPUT_SIZE];
     unsigned char firstCharByte, secondCharByte;
-    enum displayGlyph translatedChar;
+    //enum displayGlyph translatedChar;
 
-    translatedChar = glyphToUnicode(inputChar);
-    translatedChar = fixUnicode(inputChar);
+    //translatedChar = glyphToUnicode(inputChar);
+    //translatedChar = fixUnicode(inputChar);
 
-    firstCharByte = translatedChar >> 8 & 0xff;
-    secondCharByte = translatedChar;
+    firstCharByte = inputChar >> 8 & 0xff;
+    secondCharByte = inputChar;
 
     outputBuffer[0] = (unsigned char)xLoc;
     outputBuffer[1] = (unsigned char)yLoc;
@@ -231,10 +247,7 @@ static void web_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInput, 
     colorsDance = false;
 
     // Send a status update of game variables we want on the client
-    if (!refreshScreenOnly) {
-        sendStatusUpdate();
-    }
-    refreshScreenOnly = 0;
+    sendStatusUpdate();
 
     // Flush output buffer
     flushOutputBuffer();
@@ -247,8 +260,12 @@ static void web_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInput, 
     if (returnEvent->eventType == REFRESH_SCREEN) {
         // Custom event type - not a command for the brogue game
         refreshScreen();
-        // Don't send a status update if this was only a screen refresh (may be sent by observer)
-        refreshScreenOnly = 1;
+        return;
+    }
+
+    if (returnEvent->eventType == QUERY_GRAPHICS) {
+        // Custom event type - not a command for the brogue game
+        notifyEvent(SWITCH_TO_GRAPHICS, showGraphics, 0, "", "");
         return;
     }
 
@@ -284,6 +301,9 @@ static boolean web_modifierHeld(int modifier) {
 static void web_notifyEvent(short eventId, int data1, int data2, const char *str1, const char *str2) {
     unsigned char statusOutputBuffer[EVENT_SIZE];
 
+    //web_setGraphicsEnabled is now called before the main game loop, so need to initalize platform if not previously initialized
+    setupPlatform();
+
     // Coordinates of (254, 254) will let the server and client know that this is a event notification update rather than a cell update
     statusOutputBuffer[0] = 254;
     statusOutputBuffer[1] = 254;
@@ -318,6 +338,12 @@ static void web_notifyEvent(short eventId, int data1, int data2, const char *str
     flushOutputBuffer();
 }
 
+static boolean web_setGraphicsEnabled(boolean state) {
+    showGraphics = state;
+    notifyEvent(SWITCH_TO_GRAPHICS, state, 0, "", "");
+    return state;
+}
+
 struct brogueConsole webConsole = {
     gameLoop,
     web_pauseForMilliseconds,
@@ -327,5 +353,5 @@ struct brogueConsole webConsole = {
     web_modifierHeld,
     web_notifyEvent,
     NULL,
-    NULL
+    web_setGraphicsEnabled
 };
