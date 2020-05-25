@@ -341,6 +341,15 @@ short actionMenu(short x, boolean playingBack) {
         buttons[buttonCount].hotkey[0] = AGGRO_DISPLAY_KEY;
         takeActionOurselves[buttonCount] = true;
         buttonCount++;
+        if (KEYBOARD_LABELS) {
+            sprintf(buttons[buttonCount].text, "  %s[: %s[%s] Low health warnings  ", yellowColorEscape, whiteColorEscape, rogue.warningPauseMode ? "X" : " ");
+        } else {
+            sprintf(buttons[buttonCount].text, "  [%s] Low health warnings  ", rogue.warningPauseMode ? "X" : " ");
+        }
+        buttons[buttonCount].hotkey[0] = WARNING_PAUSE_KEY;
+        takeActionOurselves[buttonCount] = true;
+        buttonCount++;
+
         if (hasGraphics) {
             if (KEYBOARD_LABELS) {
                 sprintf(buttons[buttonCount].text, "  %sG: %s[%s] Enable graphics  ", yellowColorEscape, whiteColorEscape, graphicsEnabled ? "X" : " ");
