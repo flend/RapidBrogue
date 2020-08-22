@@ -29,7 +29,7 @@ ifeq ($(MAC_APP),YES)
 	cppflags += -DSDL_PATHS
 endif
 
-ifeq ($(DEBUG),YES)
+ifeq ($(WEBBROGUE),YES)
 	cflags += -g
 	cppflags += -DENABLE_PLAYBACK_SWITCH
 else
