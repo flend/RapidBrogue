@@ -23,17 +23,20 @@ endif
 ifeq ($(WEBBROGUE),YES)
 	sources += $(addprefix src/platform/,web-platform.c)
 	cppflags += -DBROGUE_WEB
+	cflags += -g
 endif
 
 ifeq ($(MAC_APP),YES)
 	cppflags += -DSDL_PATHS
 endif
 
-ifeq ($(WEBBROGUE),YES)
+ifeq ($(DEBUG),YES)
 	cflags += -g
 	cppflags += -DENABLE_PLAYBACK_SWITCH
 else
+ifneq ($(WEBBROGUE),YES)
 	cflags += -O2
+endif
 endif
 
 objects := $(sources:.c=.o)

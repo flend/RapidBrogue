@@ -861,7 +861,7 @@ void handleHealthAlerts() {
     thresholds[] = {5, 10, 25, 40},
     pThresholds[] = {100, 90, 50};
     char buf[DCOLS];
-    char colorbuf[DCOLS + 4];
+    char colorbuf[DCOLS + 4] = "";
 
     const short healthThresholdsCount = 4,
     poisonThresholdsCount = 3;
