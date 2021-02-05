@@ -143,20 +143,26 @@ void welcome() {
 void initializeRogue(unsigned long seed) {
     short i, j, k;
     item *theItem;
-    boolean playingback, playbackFF, playbackPaused, wizard;
+    boolean playingback, playbackFF, playbackPaused, wizard, displayAggroRangeMode;
+    boolean trueColorMode;
     short oldRNG;
 
-    playingback = rogue.playbackMode; // the only four animals that need to go on the ark
+    playingback = rogue.playbackMode; // the only animals that need to go on the ark
     playbackPaused = rogue.playbackPaused;
     playbackFF = rogue.playbackFastForward;
     wizard = rogue.wizard;
+    displayAggroRangeMode = rogue.displayAggroRangeMode;
+    trueColorMode = rogue.trueColorMode;
     memset((void *) &rogue, 0, sizeof( playerCharacter )); // the flood
     rogue.playbackMode = playingback;
     rogue.playbackPaused = playbackPaused;
     rogue.playbackFastForward = playbackFF;
     rogue.wizard = wizard;
+    rogue.displayAggroRangeMode = displayAggroRangeMode;
+    rogue.trueColorMode = trueColorMode;
 
     rogue.gameHasEnded = false;
+    rogue.gameInProgress = true;
     rogue.highScoreSaved = false;
     rogue.cautiousMode = false;
     rogue.milliseconds = 0;
@@ -569,7 +575,7 @@ void startLevel(short oldLevelNumber, short stairDirection) {
             freeGrid(monst->mapToMe);
             monst->mapToMe = NULL;
         }
-        if (monst->safetyMap) {
+        if (rogue.patchVersion < 3 && monst->safetyMap) {
             freeGrid(monst->safetyMap);
             monst->safetyMap = NULL;
         }
@@ -580,7 +586,7 @@ void startLevel(short oldLevelNumber, short stairDirection) {
 
     for (i=0; i<DCOLS; i++) {
         for (j=0; j<DROWS; j++) {
-            if (pmap[i][j].flags & VISIBLE) {
+            if (pmap[i][j].flags & (rogue.patchVersion >= 3 ? ANY_KIND_OF_VISIBLE : VISIBLE)) {
                 // Remember visible cells upon exiting.
                 storeMemories(i, j);
             }
@@ -588,7 +594,7 @@ void startLevel(short oldLevelNumber, short stairDirection) {
                 levels[oldLevelNumber - 1].mapStorage[i][j].layers[layer] = pmap[i][j].layers[layer];
             }
             levels[oldLevelNumber - 1].mapStorage[i][j].volume = pmap[i][j].volume;
-            levels[oldLevelNumber - 1].mapStorage[i][j].flags = (pmap[i][j].flags & PERMANENT_TILE_FLAGS);
+            levels[oldLevelNumber - 1].mapStorage[i][j].flags = (pmap[i][j].flags & (rogue.patchVersion < 3 ? (PERMANENT_TILE_FLAGS & ~HAS_MONSTER) : PERMANENT_TILE_FLAGS));
             levels[oldLevelNumber - 1].mapStorage[i][j].machineNumber = pmap[i][j].machineNumber;
             levels[oldLevelNumber - 1].mapStorage[i][j].rememberedAppearance = pmap[i][j].rememberedAppearance;
             levels[oldLevelNumber - 1].mapStorage[i][j].rememberedItemCategory = pmap[i][j].rememberedItemCategory;
@@ -680,7 +686,7 @@ void startLevel(short oldLevelNumber, short stairDirection) {
                     pmap[i][j].layers[layer] = levels[rogue.depthLevel - 1].mapStorage[i][j].layers[layer];
                 }
                 pmap[i][j].volume = levels[rogue.depthLevel - 1].mapStorage[i][j].volume;
-                pmap[i][j].flags = (levels[rogue.depthLevel - 1].mapStorage[i][j].flags & PERMANENT_TILE_FLAGS);
+                pmap[i][j].flags = (levels[rogue.depthLevel - 1].mapStorage[i][j].flags & (rogue.patchVersion < 3 ? (PERMANENT_TILE_FLAGS & ~HAS_MONSTER) : PERMANENT_TILE_FLAGS));
                 pmap[i][j].machineNumber = levels[rogue.depthLevel - 1].mapStorage[i][j].machineNumber;
                 pmap[i][j].rememberedAppearance = levels[rogue.depthLevel - 1].mapStorage[i][j].rememberedAppearance;
                 pmap[i][j].rememberedItemCategory = levels[rogue.depthLevel - 1].mapStorage[i][j].rememberedItemCategory;
@@ -713,18 +719,20 @@ void startLevel(short oldLevelNumber, short stairDirection) {
             restoreItem(theItem);
         }
 
-        mapToStairs = allocGrid();
-        mapToPit = allocGrid();
-        fillGrid(mapToStairs, 0);
-        fillGrid(mapToPit, 0);
-        calculateDistances(mapToStairs, player.xLoc, player.yLoc, T_PATHING_BLOCKER, NULL, true, true);
-        calculateDistances(mapToPit, levels[rogue.depthLevel-1].playerExitedVia[0],
-                           levels[rogue.depthLevel-1].playerExitedVia[0], T_PATHING_BLOCKER, NULL, true, true);
-        for (monst = monsters->nextCreature; monst != NULL; monst = monst->nextCreature) {
-            restoreMonster(monst, mapToStairs, mapToPit);
+        if (rogue.patchVersion < 3) {
+            mapToStairs = allocGrid();
+            mapToPit = allocGrid();
+            fillGrid(mapToStairs, 0);
+            fillGrid(mapToPit, 0);
+            calculateDistances(mapToStairs, player.xLoc, player.yLoc, T_PATHING_BLOCKER, NULL, true, true);
+            calculateDistances(mapToPit, levels[rogue.depthLevel-1].playerExitedVia[0],
+                               levels[rogue.depthLevel-1].playerExitedVia[0], T_PATHING_BLOCKER, NULL, true, true);
+            for (monst = monsters->nextCreature; monst != NULL; monst = monst->nextCreature) {
+                restoreMonster(monst, mapToStairs, mapToPit);
+            }
+            freeGrid(mapToStairs);
+            freeGrid(mapToPit);
         }
-        freeGrid(mapToStairs);
-        freeGrid(mapToPit);
     }
 
     // Simulate the environment!
@@ -798,6 +806,21 @@ void startLevel(short oldLevelNumber, short stairDirection) {
     if (cellHasTerrainFlag(player.xLoc, player.yLoc, T_IS_DEEP_WATER) && !player.status[STATUS_LEVITATING]
         && !cellHasTerrainFlag(player.xLoc, player.yLoc, (T_ENTANGLES | T_OBSTRUCTS_PASSABILITY))) {
         rogue.inWater = true;
+    }
+
+    if (levels[rogue.depthLevel - 1].visited && rogue.patchVersion >= 3) {
+        mapToStairs = allocGrid();
+        mapToPit = allocGrid();
+        fillGrid(mapToStairs, 0);
+        fillGrid(mapToPit, 0);
+        calculateDistances(mapToStairs, player.xLoc, player.yLoc, T_PATHING_BLOCKER, NULL, true, true);
+        calculateDistances(mapToPit, levels[rogue.depthLevel-1].playerExitedVia[0],
+                           levels[rogue.depthLevel-1].playerExitedVia[1], T_PATHING_BLOCKER, NULL, true, true);
+        for (monst = monsters->nextCreature; monst != NULL; monst = monst->nextCreature) {
+            restoreMonster(monst, mapToStairs, mapToPit);
+        }
+        freeGrid(mapToStairs);
+        freeGrid(mapToPit);
     }
 
     updateMapToShore();
@@ -951,12 +974,11 @@ void gameOver(char *killedBy, boolean useCustomPhrasing) {
     if (player.bookkeepingFlags & MB_IS_DYING) {
         // we've already been through this once; let's avoid overkill.
         return;
-    } else {
-        player.bookkeepingFlags |= MB_IS_DYING;
     }
 
+    player.bookkeepingFlags |= MB_IS_DYING;
     rogue.autoPlayingLevel = false;
-
+    rogue.gameInProgress = false;
     flushBufferToFile();
 
     if (rogue.quit) {
@@ -1014,6 +1036,7 @@ void gameOver(char *killedBy, boolean useCustomPhrasing) {
             player.status[STATUS_NUTRITION] = STOMACH_SIZE;
         }
         player.bookkeepingFlags &= ~MB_IS_DYING;
+        rogue.gameInProgress = true;
         return;
     }
 
@@ -1104,6 +1127,7 @@ void victory(boolean superVictory) {
     cellDisplayBuffer dbuf[COLS][ROWS];
     char recordingFilename[BROGUE_FILENAME_MAX] = {0};
 
+    rogue.gameInProgress = false;
     flushBufferToFile();
 
     //

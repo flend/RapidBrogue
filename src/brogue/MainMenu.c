@@ -58,7 +58,7 @@ void drawMenuFlames(signed short flames[COLS][(ROWS + MENU_FLAME_ROW_PADDING)][3
             }
 
             if (mask[i][j] == 100) {
-                plotCharWithColor(dchar, i, j, &darkGray, maskColor);
+                plotCharWithColor(dchar, i, j, &veryDarkGray, maskColor);
             } else {
                 tempColor = black;
                 tempColor.red   = flames[i][j][0] / MENU_FLAME_PRECISION_FACTOR;
@@ -67,7 +67,7 @@ void drawMenuFlames(signed short flames[COLS][(ROWS + MENU_FLAME_ROW_PADDING)][3
                 if (mask[i][j] > 0) {
                     applyColorAverage(&tempColor, maskColor, mask[i][j]);
                 }
-                plotCharWithColor(dchar, i, j, &darkGray, &tempColor);
+                plotCharWithColor(dchar, i, j, &veryDarkGray, &tempColor);
             }
         }
     }
@@ -390,6 +390,23 @@ void titleMenu() {
             rogue.nextGame = buttonCommands[button];
         }
     }
+}
+
+// Closes Brogue without any further prompts, animations, or user interaction.
+void quitImmediately() {
+    // If we are recording a game, save it.
+    if (rogue.recording) {
+        flushBufferToFile();
+        if (rogue.gameInProgress && !rogue.quit && !rogue.gameHasEnded) {
+            // Game isn't over yet, create a savegame.
+            saveGameNoPrompt();
+        } else {
+            // Save it as a recording.
+            char path[BROGUE_FILENAME_MAX];
+            saveRecordingNoPrompt(path);
+        }
+    }
+    exit(0);
 }
 
 void dialogAlert(char *message) {

@@ -1,3 +1,5 @@
+#include <math.h>
+#include <limits.h>
 #include "platform.h"
 
 // Expanding a macro as a string constant requires two levels of macros
@@ -6,7 +8,6 @@
 
 struct brogueConsole currentConsole;
 
-int brogueFontSize = 0;
 char dataDirectory[BROGUE_FILENAME_MAX] = STRINGIFY(DATADIR);
 boolean serverMode = false;
 boolean hasGraphics = false;
@@ -26,12 +27,16 @@ static void printCommandlineHelp() {
     "--server-mode              run the game in web-brogue server mode\n"
 #endif
 #ifdef BROGUE_SDL
-    "--size N                   starts the game at font size N (1 to 13)\n"
+    "--size N                   starts the game at font size N (1 to 20)\n"
     "--graphics     -G          enable graphical tiles\n"
+    "--full-screen  -F          enable full screen\n"
+    "--no-gpu                   disable hardware-accelerated graphics and HiDPI\n"
 #endif
 #ifdef BROGUE_CURSES
     "--term         -t          run in ncurses-based terminal mode\n"
 #endif
+    "--stealth      -S          display stealth range\n"
+    "--no-effects   -E          disable color effects\n"
     "--wizard       -W          run in wizard mode, invincible with powerful items\n"
     "[--csv] --print-seed-catalog [START NUM LEVELS]\n"
     "                           (optional csv format)\n"
@@ -72,6 +77,8 @@ int main(int argc, char *argv[])
     rogue.nextGamePath[0] = '\0';
     rogue.nextGameSeed = 0;
     rogue.wizard = false;
+    rogue.displayAggroRangeMode = false;
+    rogue.trueColorMode = false;
 
     boolean initialGraphics = false;
 
@@ -174,13 +181,26 @@ int main(int argc, char *argv[])
 
 #ifdef BROGUE_SDL
         if (strcmp(argv[i], "--size") == 0) {
-            // pick a font size
-            int size = atoi(argv[i + 1]);
-            if (size != 0) {
+            if (i + 1 < argc) {
+                int size = atoi(argv[i + 1]);
+                if (size > 0 && size <= 20) {
+                    windowWidth = round(pow(1.1, size) * 620.);
+                    // Height set automatically
+                };
+
                 i++;
-                brogueFontSize = size;
                 continue;
-            };
+            }
+        }
+
+        if (strcmp(argv[i], "-F") == 0 || strcmp(argv[i], "--full-screen") == 0) {
+            fullScreen = true;
+            continue;
+        }
+
+        if (strcmp(argv[i], "--no-gpu") == 0) {
+            softwareRendering = true;
+            continue;
         }
 #endif
 
@@ -199,6 +219,16 @@ int main(int argc, char *argv[])
             continue;
         }
 #endif
+
+        if (strcmp(argv[i], "--stealth") == 0 || strcmp(argv[i], "-S") == 0) {
+            rogue.displayAggroRangeMode = true;
+            continue;
+        }
+
+        if (strcmp(argv[i], "--no-effects") == 0 || strcmp(argv[i], "-E") == 0) {
+            rogue.trueColorMode = true;
+            continue;
+        }
 
         if (strcmp(argv[i], "--wizard") == 0 || strcmp(argv[i], "-W") == 0) {
             rogue.wizard = true;

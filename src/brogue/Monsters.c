@@ -851,6 +851,11 @@ creature *spawnHorde(short hordeID, short x, short y, unsigned long forbiddenFla
         leader->info.intrinsicLightType = SACRIFICE_MARK_LIGHT;
     }
 
+    if (rogue.patchVersion >= 3 && (theHorde->flags & HORDE_MACHINE_THIEF)) {
+        leader->safetyMap = allocGrid(); // Keep thieves from fleeing before they see the player
+        fillGrid(leader->safetyMap, 0);
+    }
+
     preexistingMonst = monsterAtLoc(x, y);
     if (preexistingMonst) {
         killCreature(preexistingMonst, true); // If there's already a monster here, quietly bury the body.
@@ -2344,6 +2349,17 @@ boolean generallyValidBoltTarget(creature *caster, creature *target) {
         // Can't target yourself; that's the fundamental theorem of Brogue bolts.
         return false;
     }
+    if (rogue.patchVersion >= 3
+        && caster->status[STATUS_DISCORDANT]
+        && caster->creatureState == MONSTER_WANDERING
+        && target == &player) {
+        // Discordant monsters always try to cast spells regardless of whether
+        // they're hunting the player, so that they cast at other monsters. This
+        // by bypasses the usual awareness checks, so the player and any allies
+        // can be hit when far away. Hence, we don't target the player with
+        // bolts if we're discordant and wandering.
+        return false;
+    }
     if (monsterIsHidden(target, caster)
         || (target->bookkeepingFlags & MB_SUBMERGED)) {
         // No bolt will affect a submerged creature. Can't shoot at invisible creatures unless it's in gas.
@@ -3260,6 +3276,9 @@ void monstersTurn(creature *monst) {
             dir = nextStep(safetyMap, monst->xLoc, monst->yLoc, NULL, true);
         } else {
             if (!monst->safetyMap) {
+                if (rogue.patchVersion >= 3 && !rogue.updatedSafetyMapThisTurn) {
+                    updateSafetyMap();
+                }
                 monst->safetyMap = allocGrid();
                 copyGrid(monst->safetyMap, safetyMap);
             }
@@ -4166,8 +4185,12 @@ void monsterDetails(char buf[], creature *monst) {
         playerKnownAverageDamage = (player.info.damage.upperBound + player.info.damage.lowerBound) / 2;
         playerKnownMaxDamage = player.info.damage.upperBound;
     } else {
-        playerKnownAverageDamage = (rogue.weapon->damage.upperBound + rogue.weapon->damage.lowerBound) / 2;
-        playerKnownMaxDamage = rogue.weapon->damage.upperBound;
+        fixpt strengthFactor = damageFraction(strengthModifier(rogue.weapon));
+        short tempLow = rogue.weapon->damage.lowerBound * strengthFactor / FP_FACTOR;
+        short tempHigh = rogue.weapon->damage.upperBound * strengthFactor / FP_FACTOR;
+
+        playerKnownAverageDamage = max(1, (tempLow + tempHigh) / 2);
+        playerKnownMaxDamage = max(1, tempHigh);
     }
 
     // Combat info for the player attacking the monster (or whether it's captive)

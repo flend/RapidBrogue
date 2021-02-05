@@ -34,6 +34,10 @@ static const long keystrokeTable[] = {UP_ARROW, LEFT_ARROW, DOWN_ARROW, RIGHT_AR
 
 static const int keystrokeCount = sizeof(keystrokeTable) / sizeof(*keystrokeTable);
 
+enum recordingSeekModes {
+    RECORDING_SEEK_MODE_TURN,
+    RECORDING_SEEK_MODE_DEPTH
+};
 
 void recordChar(unsigned char c) {
     inputRecordBuffer[locationInRecordingBuffer++] = c;
@@ -173,8 +177,8 @@ void writeHeaderInfo(char *path) {
     }
 
     // Note the version string to gracefully deny compatibility when necessary.
-    for (i = 0; BROGUE_RECORDING_VERSION_STRING[i] != '\0'; i++) {
-        c[i] = BROGUE_RECORDING_VERSION_STRING[i];
+    for (i = 0; rogue.versionString[i] != '\0'; i++) {
+        c[i] = rogue.versionString[i];
     }
     c[15] = rogue.wizard;
     i = 16;
@@ -449,7 +453,7 @@ void initRecording() {
     short i;
     boolean wizardMode;
     unsigned short gamePatch, recPatch;
-    char versionString[16] = {0}, buf[100];
+    char buf[100], *versionString = rogue.versionString;
     FILE *recordFile;
 
 #ifdef AUDIT_RNG
@@ -536,6 +540,7 @@ void initRecording() {
     } else {
         // If present, set the patch version for playing the game.
         getPatchVersion(BROGUE_RECORDING_VERSION_STRING, &rogue.patchVersion);
+        strcpy(versionString, BROGUE_RECORDING_VERSION_STRING);
 
         lengthOfPlaybackFile = 1;
         remove(currentFilePath);
@@ -543,6 +548,7 @@ void initRecording() {
         fclose(recordFile);
 
         flushBufferToFile(); // header info never makes it into inputRecordBuffer when recording
+        rogue.recording = true;
     }
     rogue.currentTurnNumber = 0;
 }
@@ -598,7 +604,7 @@ boolean unpause() {
     return false;
 }
 
-#define PLAYBACK_HELP_LINE_COUNT    19
+#define PLAYBACK_HELP_LINE_COUNT    20
 
 void printPlaybackHelpScreen() {
     short i, j;
@@ -609,7 +615,8 @@ void printPlaybackHelpScreen() {
         "         <space>: ****pause or unpause playback",
         "   k or up arrow: ****play back faster",
         " j or down arrow: ****play back slower",
-        "               >: ****skip to next level",
+        "               <: ****go to previous level",
+        "               >: ****go to next level",
         "             0-9: ****skip to specified turn number",
         "l or right arrow: ****advance one turn (shift for 5 turns; control for 20)",
         "",
@@ -653,52 +660,91 @@ void printPlaybackHelpScreen() {
     overlayDisplayBuffer(rbuf, NULL);
 }
 
-void advanceToLocation(unsigned long destinationFrame) {
-    unsigned long progressBarInterval, initialFrameNumber;
-    rogueEvent theEvent;
-    boolean useProgressBar, omniscient, stealth, trueColors;
+static void resetPlayback() {
+    boolean omniscient, stealth, trueColors;
 
     omniscient = rogue.playbackOmniscience;
     stealth = rogue.displayAggroRangeMode;
     trueColors = rogue.trueColorMode;
-    rogue.playbackOmniscience = false;
-    rogue.displayAggroRangeMode = false;
-    rogue.trueColorMode = false;
 
+    freeEverything();
+    randomNumbersGenerated = 0;
+    rogue.playbackMode = true;
+    initializeRogue(0); // Seed argument is ignored because we're in playback.
+
+    rogue.playbackOmniscience = omniscient;
+    rogue.displayAggroRangeMode = stealth;
+    rogue.trueColorMode = trueColors;
+
+    rogue.playbackFastForward = false;
+    blackOutScreen();
+    rogue.playbackFastForward = true;
+    startLevel(rogue.depthLevel, 1);
+}
+
+static void seek(unsigned long seekTarget, enum recordingSeekModes seekMode) {
+    unsigned long progressBarRefreshInterval = 1, startTurnNumber = 0, targetTurnNumber = 0, avgTurnsPerLevel = 1;
+    rogueEvent theEvent;
+    boolean pauseState, useProgressBar = false, arrivedAtDestination = false;
     cellDisplayBuffer dbuf[COLS][ROWS];
 
-    if (destinationFrame < rogue.playerTurnNumber) {
-        useProgressBar = (destinationFrame > 100 ? true : false);
+    pauseState = rogue.playbackPaused;
 
-        // Start the recording over, and fast-forward to chosen frame.
-        freeEverything();
-        randomNumbersGenerated = 0;
-        rogue.playbackMode = true;
-        initializeRogue(0); // Seed argument is ignored because we're in playback.
-        startLevel(rogue.depthLevel, 1);
-        if (useProgressBar) {
-            blackOutScreen();
-        }
-    } else {
-        useProgressBar = (destinationFrame - rogue.playerTurnNumber > 100 ? true : false);
+    // configure progress bar
+    switch (seekMode) {
+        case RECORDING_SEEK_MODE_DEPTH :
+            if (maxLevelChanges > 0) {
+                avgTurnsPerLevel = rogue.howManyTurns / maxLevelChanges;
+            }
+            if (seekTarget <= rogue.depthLevel) {
+                startTurnNumber = 0;
+                targetTurnNumber = avgTurnsPerLevel * seekTarget;
+            } else {
+                startTurnNumber = rogue.playerTurnNumber;
+                targetTurnNumber = rogue.playerTurnNumber + avgTurnsPerLevel;
+            }
+            break;
+        case RECORDING_SEEK_MODE_TURN :
+            if (seekTarget < rogue.playerTurnNumber) {
+                startTurnNumber = 0;
+                targetTurnNumber = seekTarget;
+            } else {
+                startTurnNumber = rogue.playerTurnNumber;
+                targetTurnNumber = seekTarget;
+            }
+            break;
     }
 
-    clearDisplayBuffer(dbuf);
-    rectangularShading((COLS - 20) / 2, ROWS / 2, 20, 1, &black, INTERFACE_OPACITY, dbuf);
-    overlayDisplayBuffer(dbuf, 0);
-    commitDraws();
-    displayMoreSign();
+    if (targetTurnNumber - startTurnNumber > 100) {
+        useProgressBar = true;
+        progressBarRefreshInterval = max(1, (targetTurnNumber) / 500);
+    }
 
+    // there is no rewind, so start over at depth 1
+    if ((seekMode == RECORDING_SEEK_MODE_TURN && seekTarget < rogue.playerTurnNumber)
+        || (seekMode == RECORDING_SEEK_MODE_DEPTH && seekTarget <= rogue.depthLevel)) {
+
+        resetPlayback();
+        if ((seekMode == RECORDING_SEEK_MODE_DEPTH && seekTarget == 1)
+            || (seekMode == RECORDING_SEEK_MODE_TURN && seekTarget == 0)) {
+            arrivedAtDestination = true;
+        }
+    }
+
+    if (useProgressBar) {
+        clearDisplayBuffer(dbuf);
+        rectangularShading((COLS - 20) / 2, ROWS / 2, 20, 1, &black, INTERFACE_OPACITY, dbuf);
+        overlayDisplayBuffer(dbuf, 0);
+        commitDraws();
+    }
     rogue.playbackFastForward = true;
-    progressBarInterval = max(1, (destinationFrame - rogue.playerTurnNumber) / 500);
-    initialFrameNumber = rogue.playerTurnNumber;
 
-    while (rogue.playerTurnNumber < destinationFrame && !rogue.gameHasEnded && !rogue.playbackOOS) {
-        if (useProgressBar && !(rogue.playerTurnNumber % progressBarInterval)) {
+    while (!arrivedAtDestination && !rogue.gameHasEnded && !rogue.playbackOOS) {
+        if (useProgressBar && !(rogue.playerTurnNumber % progressBarRefreshInterval)) {
             rogue.playbackFastForward = false; // so that pauseBrogue looks for inputs
             printProgressBar((COLS - 20) / 2, ROWS / 2, "[     Loading...   ]",
-                             rogue.playerTurnNumber - initialFrameNumber,
-                             destinationFrame - initialFrameNumber, &darkPurple, false);
+                             rogue.playerTurnNumber - startTurnNumber,
+                             targetTurnNumber - startTurnNumber, &darkPurple, false);
             while (pauseBrogue(0)) { // pauseBrogue(0) is necessary to flush the display to the window in SDL
                 if (rogue.gameHasEnded) {
                     return;
@@ -714,13 +760,15 @@ void advanceToLocation(unsigned long destinationFrame) {
         nextBrogueEvent(&theEvent, false, true, false);
         rogue.RNG = RNG_SUBSTANTIVE;
         executeEvent(&theEvent);
+
+        if ((seekMode == RECORDING_SEEK_MODE_DEPTH && rogue.depthLevel == seekTarget)
+            || (seekMode == RECORDING_SEEK_MODE_TURN && rogue.playerTurnNumber == seekTarget)) {
+
+            arrivedAtDestination = true;
+        }
     }
 
-    rogue.playbackOmniscience = omniscient;
-    rogue.displayAggroRangeMode = stealth;
-    rogue.trueColorMode = trueColors;
-
-    rogue.playbackPaused = true;
+    rogue.playbackPaused = pauseState;
     rogue.playbackFastForward = false;
     confirmMessages();
     updateMessageDisplay();
@@ -753,7 +801,7 @@ void promptToAdvanceToLocation(short keystroke) {
                 sprintf(buf, " Already at turn %li ", destinationFrame);
                 flashTemporaryAlert(buf, 1000);
             } else {
-                advanceToLocation(destinationFrame);
+                seek(destinationFrame, RECORDING_SEEK_MODE_TURN);
             }
             rogue.playbackPaused = true;
         }
@@ -781,10 +829,9 @@ void pausePlayback() {
 // Used to interact with playback -- e.g. changing speed, pausing.
 boolean executePlaybackInput(rogueEvent *recordingInput) {
     signed long key;
-    short newDelay, frameCount, x, y, previousDeepestLevel;
+    short newDelay, frameCount, x, y;
     unsigned long destinationFrame;
-    boolean pauseState, proceed;
-    rogueEvent theEvent;
+    boolean proceed;
     char path[BROGUE_FILENAME_MAX];
 
     if (!rogue.playbackMode) {
@@ -831,31 +878,15 @@ boolean executePlaybackInput(rogueEvent *recordingInput) {
                     messageWithColor("Omniscience disabled.", &teal, false);
                 }
                 return true;
+            case ASCEND_KEY:
+                seek(max(rogue.depthLevel - 1, 1), RECORDING_SEEK_MODE_DEPTH);
+                return true;
             case DESCEND_KEY:
-                pauseState = rogue.playbackPaused;
-                previousDeepestLevel = rogue.deepestLevel;
-                if (!rogue.playbackPaused || unpause()) {
-                    if ((unsigned long) rogue.deepestLevel < maxLevelChanges) {
-                        displayCenteredAlert(" Loading... ");
-                        commitDraws();
-                        rogue.playbackFastForward = true;
-                        while ((rogue.deepestLevel <= previousDeepestLevel || !rogue.playbackBetweenTurns)
-                               && !rogue.gameHasEnded) {
-                            rogue.RNG = RNG_COSMETIC; // dancing terrain colors can't influence recordings
-                            nextBrogueEvent(&theEvent, false, true, false);
-                            rogue.RNG = RNG_SUBSTANTIVE;
-                            executeEvent(&theEvent);
-                        }
-                        rogue.playbackFastForward = false;
-                        rogue.playbackPaused = pauseState;
-                        displayLevel();
-                        refreshSideBar(-1, -1, false);
-                        updateMessageDisplay();
-                    } else {
-                        flashTemporaryAlert(" Already reached deepest depth explored ", 1000);
-                    }
+                if (rogue.depthLevel == maxLevelChanges) {
+                    flashTemporaryAlert(" Already reached deepest depth explored ", 2000);
+                    return false;
                 }
-                rogue.playbackPaused = pauseState;
+                seek(rogue.depthLevel + 1, RECORDING_SEEK_MODE_DEPTH);
                 return true;
             case INVENTORY_KEY:
                 rogue.playbackMode = false;
@@ -873,11 +904,9 @@ boolean executePlaybackInput(rogueEvent *recordingInput) {
                 }
                 if (recordingInput->shiftKey) {
                     frameCount *= 5;
-                    rogue.playbackFastForward = true;
                 }
                 if (recordingInput->controlKey) {
                     frameCount *= 20;
-                    rogue.playbackFastForward = true;
                 }
 
                 if (frameCount < 0) {
@@ -897,26 +926,11 @@ boolean executePlaybackInput(rogueEvent *recordingInput) {
                     proceed = (rogue.playerTurnNumber < 100 || confirm("Rewind?", true));
                     rogue.playbackMode = true;
                     if (proceed) {
-                        advanceToLocation(destinationFrame);
+                        seek(destinationFrame, RECORDING_SEEK_MODE_TURN);
                     }
                 } else {
                     // advance by the right number of turns
-                    if (!rogue.playbackPaused || unpause()) {
-                        while (rogue.playerTurnNumber < destinationFrame && !rogue.gameHasEnded && !rogue.playbackOOS) {
-                            rogue.RNG = RNG_COSMETIC; // dancing terrain colors can't influence recordings
-                            rogue.playbackDelayThisTurn = 0;
-                            nextBrogueEvent(&theEvent, false, true, false);
-                            rogue.RNG = RNG_SUBSTANTIVE;
-                            executeEvent(&theEvent);
-                        }
-                        rogue.playbackPaused = true;
-                        if (rogue.playbackFastForward) {
-                            rogue.playbackFastForward = false;
-                            displayLevel();
-                            updateMessageDisplay();
-                        }
-                        refreshSideBar(-1, -1, false);
-                    }
+                    seek(destinationFrame, RECORDING_SEEK_MODE_TURN);
                 }
                 return true;
             case BROGUE_HELP_KEY:
@@ -1074,7 +1088,7 @@ void getAvailableFilePath(char *returnPath, const char *defaultPath, const char 
     strcpy(returnPath, defaultPath);
     sprintf(fullPath, "%s%s", returnPath, suffix);
     while (fileExists(fullPath)) {
-        sprintf(returnPath, "%s %i", defaultPath, fileNameIterator);
+        sprintf(returnPath, "%s (%i)", defaultPath, fileNameIterator);
         sprintf(fullPath, "%s%s", returnPath, suffix);
         fileNameIterator++;
     }
@@ -1088,6 +1102,55 @@ boolean characterForbiddenInFilename(const char theChar) {
     }
 }
 
+void getDefaultFilePath(char *defaultPath, boolean gameOver) {
+    char seed[21];
+
+    // 32-bit numbers are printed in full
+    // 64-bit numbers longer than 11 digits are shortened to e.g "184...51615"
+    sprintf(seed, "%llu", (unsigned long long)rogue.seed);
+    if (strlen(seed) > 11) sprintf(seed+3, "...%05lu", (unsigned long)(rogue.seed % 100000));
+
+    if (serverMode) {
+        // With WebBrogue, filenames must fit into 30 bytes, including extension and terminal \0.
+        // It is enough for the seed and the optional file counter. The longest filename will be:
+        // "#184...51615 (999).broguesave" (30 bytes)
+        sprintf(defaultPath, "#%s", seed);
+        return;
+    }
+
+    if (!gameOver) {
+        sprintf(defaultPath, "Saved #%s at depth %d", seed, rogue.depthLevel);
+    } else if (rogue.quit) {
+        sprintf(defaultPath, "#%s Quit at depth %d", seed, rogue.depthLevel);
+    } else if (player.bookkeepingFlags & MB_IS_DYING) {
+        sprintf(defaultPath, "#%s Died at depth %d", seed, rogue.depthLevel);
+    } else if (rogue.depthLevel > 26) {
+        sprintf(defaultPath, "#%s Mastered the dungeons", seed);
+    } else {
+        sprintf(defaultPath, "#%s Escaped the dungeons", seed);
+    }
+    if (rogue.wizard) {
+        strcat(defaultPath, " (wizard)");
+    } else if (rogue.easyMode) {
+        strcat(defaultPath, " (easy)");
+    }
+}
+
+void saveGameNoPrompt() {
+    char filePath[BROGUE_FILENAME_MAX], defaultPath[BROGUE_FILENAME_MAX];
+    if (rogue.playbackMode) {
+        return;
+    }
+    getDefaultFilePath(defaultPath, false);
+    getAvailableFilePath(filePath, defaultPath, GAME_SUFFIX);
+    flushBufferToFile();
+    strcat(filePath, GAME_SUFFIX);
+    rename(currentFilePath, filePath);
+    strcpy(currentFilePath, filePath);
+    rogue.gameHasEnded = true;
+    rogue.recording = false;
+}
+
 void saveGame() {
     char filePath[BROGUE_FILENAME_MAX], defaultPath[BROGUE_FILENAME_MAX];
     boolean askAgain;
@@ -1096,19 +1159,21 @@ void saveGame() {
         return; // Call me paranoid, but I'd rather it be impossible to embed malware in a recording.
     }
 
-    getAvailableFilePath(defaultPath, "Saved game", GAME_SUFFIX);
+    getDefaultFilePath(defaultPath, false);
+    getAvailableFilePath(filePath, defaultPath, GAME_SUFFIX);
 
     deleteMessages();
     do {
         askAgain = false;
         if (getInputTextString(filePath, "Save game as (<esc> to cancel): ",
-                               BROGUE_FILENAME_MAX - strlen(GAME_SUFFIX), defaultPath, GAME_SUFFIX, TEXT_INPUT_FILENAME, false)) {
+                               BROGUE_FILENAME_MAX - strlen(GAME_SUFFIX), filePath, GAME_SUFFIX, TEXT_INPUT_FILENAME, false)) {
             strcat(filePath, GAME_SUFFIX);
             if (!fileExists(filePath) || confirm("File of that name already exists. Overwrite?", true)) {
                 remove(filePath);
                 flushBufferToFile();
                 rename(currentFilePath, filePath);
                 strcpy(currentFilePath, filePath);
+                rogue.recording = false;
                 message("Saved.", true);
                 rogue.gameHasEnded = true;
             } else {
@@ -1119,15 +1184,17 @@ void saveGame() {
     deleteMessages();
 }
 
-void saveRecordingNoPrompt(char *filePath)
-{
+void saveRecordingNoPrompt(char *filePath) {
+    char defaultPath[BROGUE_FILENAME_MAX];
     if (rogue.playbackMode) {
         return;
     }
-    getAvailableFilePath(filePath, "Recording", RECORDING_SUFFIX);
+    getDefaultFilePath(defaultPath, true);
+    getAvailableFilePath(filePath, defaultPath, RECORDING_SUFFIX);
     strcat(filePath, RECORDING_SUFFIX);
     remove(filePath);
     rename(currentFilePath, filePath);
+    rogue.recording = false;
 }
 
 void saveRecording(char *filePath) {
@@ -1138,18 +1205,20 @@ void saveRecording(char *filePath) {
         return;
     }
 
-    getAvailableFilePath(defaultPath, "Recording", RECORDING_SUFFIX);
+    getDefaultFilePath(defaultPath, true);
+    getAvailableFilePath(filePath, defaultPath, RECORDING_SUFFIX);
 
     deleteMessages();
     do {
         askAgain = false;
         if (getInputTextString(filePath, "Save recording as (<esc> to cancel): ",
-                               BROGUE_FILENAME_MAX - strlen(RECORDING_SUFFIX), defaultPath, RECORDING_SUFFIX, TEXT_INPUT_FILENAME, false)) {
+                               BROGUE_FILENAME_MAX - strlen(RECORDING_SUFFIX), filePath, RECORDING_SUFFIX, TEXT_INPUT_FILENAME, false)) {
 
             strcat(filePath, RECORDING_SUFFIX);
             if (!fileExists(filePath) || confirm("File of that name already exists. Overwrite?", true)) {
                 remove(filePath);
                 rename(currentFilePath, filePath);
+                rogue.recording = false;
             } else {
                 askAgain = true;
             }
@@ -1160,6 +1229,7 @@ void saveRecording(char *filePath) {
                 remove(filePath);
             }
             rename(currentFilePath, filePath);
+            rogue.recording = false;
         }
     } while (askAgain);
     deleteMessages();
@@ -1195,6 +1265,7 @@ void switchToPlaying() {
     rogue.playbackMode          = false;
     rogue.playbackFastForward   = false;
     rogue.playbackOmniscience   = false;
+    rogue.recording             = true;
     locationInRecordingBuffer   = 0;
     copyFile(currentFilePath, lastGamePath, recordingLocation);
 #ifndef ENABLE_PLAYBACK_SWITCH

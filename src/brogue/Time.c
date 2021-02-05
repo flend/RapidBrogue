@@ -98,7 +98,7 @@ boolean monsterShouldFall(creature *monst) {
 
 // Called at least every 100 ticks; may be called more frequently.
 void applyInstantTileEffectsToCreature(creature *monst) {
-    char buf[COLS], buf2[COLS];
+    char buf[COLS], buf2[COLS], buf3[COLS];
     short *x = &(monst->xLoc), *y = &(monst->yLoc), damage;
     enum dungeonLayers layer;
     item *theItem;
@@ -315,11 +315,14 @@ void applyInstantTileEffectsToCreature(creature *monst) {
                 monst->creatureState = MONSTER_TRACKING_SCENT;
             }
             monsterName(buf, monst, true);
+
+            // Get explosive layer before damage in case a death DF replaces the explosion
+            strcpy(buf3, tileCatalog[pmap[*x][*y].layers[layerWithFlag(*x, *y, T_CAUSES_EXPLOSIVE_DAMAGE)]].description);
             if (inflictDamage(NULL, monst, damage, &yellow, false)) {
                 // if killed
                 sprintf(buf2, "%s %s %s.", buf,
                         (monst->info.flags & MONST_INANIMATE) ? "is destroyed by" : "dies in",
-                        tileCatalog[pmap[*x][*y].layers[layerWithFlag(*x, *y, T_CAUSES_EXPLOSIVE_DAMAGE)]].description);
+                        buf3);
                 messageWithColor(buf2, messageColorFromVictim(monst), false);
                 refreshDungeonCell(*x, *y);
                 return;
@@ -425,6 +428,10 @@ void applyInstantTileEffectsToCreature(creature *monst) {
     if (cellHasTerrainFlag(*x, *y, T_IS_FIRE)) {
         exposeCreatureToFire(monst);
     } else if (cellHasTerrainFlag(*x, *y, T_IS_FLAMMABLE)
+            // We should only expose to fire if it is flammable and not on fire. However, when
+            // gas burns, it only sets the volume to 0 and doesn't clear the layer (for visual
+            // reasons). This can cause crashes if the fire tile fails to spawn, so we also exclude it.
+               && !(pmap[*x][*y].layers[GAS] != NOTHING && pmap[*x][*y].volume == 0)
                && !cellHasTerrainFlag(*x, *y, T_IS_FIRE)
                && monst->status[STATUS_BURNING]
                && !(monst->bookkeepingFlags & (MB_SUBMERGED | MB_IS_FALLING))) {
@@ -1181,6 +1188,8 @@ boolean exposeTileToFire(short x, short y, boolean alwaysIgnite) {
         // Flammable layers are consumed.
         for (layer=0; layer < NUMBER_TERRAIN_LAYERS; layer++) {
             if (tileCatalog[pmap[x][y].layers[layer]].flags & T_IS_FLAMMABLE) {
+                // pmap[x][y].layers[GAS] is not cleared here, which is a bug.
+                // We preserve the layer anyways because this results in nicer gas burning behavior.
                 if (layer == GAS) {
                     pmap[x][y].volume = 0; // Flammable gas burns its volume away.
                 }
@@ -1346,6 +1355,8 @@ void monstersFall() {
     for (monst = monsters->nextCreature; monst != NULL; monst = nextCreature) {
         nextCreature = monst->nextCreature;
         if ((monst->bookkeepingFlags & MB_IS_FALLING) || monsterShouldFall(monst)) {
+            if (rogue.patchVersion >= 3) monst->bookkeepingFlags |= MB_IS_FALLING;
+
             x = monst->xLoc;
             y = monst->yLoc;
 
@@ -1354,15 +1365,26 @@ void monstersFall() {
                 sprintf(buf2, "%s plunges out of sight!", buf);
                 messageWithColor(buf2, messageColorFromVictim(monst), false);
             }
-            monst->status[STATUS_ENTRANCED] = 0;
-            monst->bookkeepingFlags |= MB_PREPLACED;
-            monst->bookkeepingFlags &= ~(MB_IS_FALLING | MB_SEIZED | MB_SEIZING);
-            monst->targetCorpseLoc[0] = monst->targetCorpseLoc[1] = 0;
+
+            if (rogue.patchVersion < 3) {
+                monst->status[STATUS_ENTRANCED] = 0;
+                monst->bookkeepingFlags |= MB_PREPLACED;
+                monst->bookkeepingFlags &= ~(MB_IS_FALLING | MB_SEIZED | MB_SEIZING);
+                monst->targetCorpseLoc[0] = monst->targetCorpseLoc[1] = 0;
+            }
+
             if (monst->info.flags & MONST_GETS_TURN_ON_ACTIVATION) {
                 // Guardians and mirrored totems never survive the fall. If they did, they might block the level below.
                 killCreature(monst, false);
             } else if (!inflictDamage(NULL, monst, randClumpedRange(6, 12, 2), &red, false)) {
                 demoteMonsterFromLeadership(monst);
+
+                if (rogue.patchVersion >= 3) {
+                    monst->status[STATUS_ENTRANCED] = 0;
+                    monst->bookkeepingFlags |= MB_PREPLACED;
+                    monst->bookkeepingFlags &= ~(MB_IS_FALLING | MB_SEIZED | MB_SEIZING);
+                    monst->targetCorpseLoc[0] = monst->targetCorpseLoc[1] = 0;
+                }
 
                 // remove from monster chain
                 for (previousCreature = monsters;
@@ -1843,6 +1865,10 @@ void monsterEntersLevel(creature *monst, short n) {
     creature *prevMonst;
     char monstName[COLS], buf[COLS];
     boolean pit = false;
+
+    if (rogue.patchVersion >= 3) {
+        levels[n].mapStorage[monst->xLoc][monst->yLoc].flags &= ~HAS_MONSTER;
+    }
 
     // place traversing monster near the stairs on this level
     if (monst->bookkeepingFlags & MB_APPROACHING_DOWNSTAIRS) {

@@ -33,11 +33,11 @@
 #define USE_UNICODE
 
 // Brogue version: what the user sees in the menu and title
-#define BROGUE_VERSION_STRING "CE 1.9.2"
+#define BROGUE_VERSION_STRING "CE 1.9.3" BROGUE_EXTRA_VERSION
 
 // Recording version. Saved into recordings and save files made by this version.
 // Cannot be longer than 16 chars
-#define BROGUE_RECORDING_VERSION_STRING "CE 1.9.2"
+#define BROGUE_RECORDING_VERSION_STRING "CE 1.9.3"
 
 /* Patch pattern. A scanf format string which matches an unsigned short. If this
 matches against a recording version string, it defines a "patch version." During
@@ -292,7 +292,13 @@ enum displayGlyph {
     G_ELECTRIC_CRYSTAL,
     G_ASHES,
     G_BEDROLL,
-    G_BLOODWORT_POD
+    G_BLOODWORT_POD,
+    G_VINE,
+    G_NET,
+    G_LICHEN,
+    G_PIPES,
+    G_SAC_ALTAR,
+    G_ORB_ALTAR
 };
 
 enum eventTypes {
@@ -1043,7 +1049,7 @@ enum tileFlags {
     IS_IN_MACHINE               = (IS_IN_ROOM_MACHINE | IS_IN_AREA_MACHINE),    // sacred ground; don't generate items here, or teleport randomly to it
 
     PERMANENT_TILE_FLAGS = (DISCOVERED | MAGIC_MAPPED | ITEM_DETECTED | HAS_ITEM | HAS_DORMANT_MONSTER
-                            | HAS_STAIRS | SEARCHED_FROM_HERE | PRESSURE_PLATE_DEPRESSED
+                            | HAS_MONSTER | HAS_STAIRS | SEARCHED_FROM_HERE | PRESSURE_PLATE_DEPRESSED
                             | STABLE_MEMORY | KNOWN_TO_BE_TRAP_FREE | IN_LOOP
                             | IS_CHOKEPOINT | IS_GATE_SITE | IS_IN_MACHINE | IMPREGNABLE),
 
@@ -2026,6 +2032,7 @@ enum monsterBookkeepingFlags {
     MB_IS_DORMANT               = Fl(21),   // lurking, waiting to burst out
     MB_HAS_SOUL                 = Fl(22),   // slaying the monster will count toward weapon auto-ID
     MB_ALREADY_SEEN             = Fl(23),   // seeing this monster won't interrupt exploration
+    MB_HAS_ENTRANCED_MOVED      = Fl(24)    // has already moved while entranced and should not move again
 };
 
 // Defines all creatures, which include monsters and the player:
@@ -2089,6 +2096,7 @@ typedef struct mutation {
     unsigned long forbiddenFlags;
     unsigned long forbiddenAbilityFlags;
     char description[1000];
+    boolean canBeNegated;
 } mutation;
 
 typedef struct hordeType {
@@ -2203,6 +2211,7 @@ typedef struct playerCharacter {
     short depthLevel;                   // which dungeon level are we on
     short deepestLevel;
     boolean disturbed;                  // player should stop auto-acting
+    boolean gameInProgress;             // the game is in progress (the player has not died, won or quit yet)
     boolean gameHasEnded;               // stop everything and go to death screen
     boolean highScoreSaved;             // so that it saves the high score only once
     boolean blockCombatText;            // busy auto-fighting
@@ -2272,8 +2281,10 @@ typedef struct playerCharacter {
     short **mapToSafeTerrain;           // so monsters can get to safety
 
     // recording info
+    boolean recording;                  // whether we are recording the game
     boolean playbackMode;               // whether we're viewing a recording instead of playing
     unsigned short patchVersion;        // what patch version of the game this was recorded on
+    char versionString[16];             // the version string saved into the recording file
     unsigned long currentTurnNumber;    // how many turns have elapsed
     unsigned long howManyTurns;         // how many turns are in this recording
     short howManyDepthChanges;          // how many times the player changes depths
@@ -3145,6 +3156,7 @@ extern "C" {
     void getAvailableFilePath(char *filePath, const char *defaultPath, const char *suffix);
     boolean characterForbiddenInFilename(const char theChar);
     void saveGame();
+    void saveGameNoPrompt();
     void saveRecording(char *filePath);
     void saveRecordingNoPrompt(char *filePath);
     void parseFile();
@@ -3185,6 +3197,7 @@ extern "C" {
     void checkForDungeonErrors();
 
     boolean dialogChooseFile(char *path, const char *suffix, const char *prompt);
+    void quitImmediately();
     void dialogAlert(char *message);
     void mainBrogueJunction();
     void printSeedCatalog(unsigned long startingSeed, unsigned long numberOfSeedsToScan, unsigned int scanThroughDepth, boolean isCsvFormat);
