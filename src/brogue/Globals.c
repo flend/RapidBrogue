@@ -1958,6 +1958,214 @@ const mutation mutationCatalog[NUMBER_MUTATORS] = {
         "A rare mutation has coated $HISHER flesh with reflective scales.",     true},
 };
 
+#ifdef RAPID_BROGUE
+const hordeType hordeCatalog[NUMBER_HORDES] = {
+    // leader       #members    member list                             member numbers                  minL    maxL    freq    spawnsIn        machine         flags
+    {MK_RAT,            0,      {0},                                    {{0}},                          1,      2,      150},
+    {MK_KOBOLD,         0,      {0},                                    {{0}},                          1,      2,      150},
+    {MK_JACKAL,         0,      {0},                                    {{0}},                          1,      1,      100},
+    {MK_JACKAL,         1,      {MK_JACKAL},                            {{1, 3, 1}},                    1,      3,      50},
+    {MK_EEL,            0,      {0},                                    {{0}},                          1,      5,     100,        DEEP_WATER},
+    {MK_MONKEY,         0,      {0},                                    {{0}},                          1,      3,      50},
+    {MK_BLOAT,          0,      {0},                                    {{0}},                          1,      4,     30},
+    {MK_PIT_BLOAT,      0,      {0},                                    {{0}},                          1,      4,     10},
+    {MK_BLOAT,          1,      {MK_BLOAT},                             {{0, 2, 1}},                    4,     6,     30},
+    {MK_PIT_BLOAT,      1,      {MK_PIT_BLOAT},                         {{0, 2, 1}},                    4,     6,     10},
+    {MK_EXPLOSIVE_BLOAT,0,      {0},                                    {{0}},                          4,     6,     10},
+    {MK_GOBLIN,         0,      {0},                                    {{0}},                          1,      4,     100},
+    {MK_GOBLIN_CONJURER,0,      {0},                                    {{0}},                          1,      4,     60},
+    {MK_TOAD,           0,      {0},                                    {{0}},                          2,      4,     100},
+    {MK_PINK_JELLY,     0,      {0},                                    {{0}},                          2,      4,     100},
+    {MK_GOBLIN_TOTEM,   1,      {MK_GOBLIN},                            {{2,4,1}},                      2,      4,     100,        0,              MT_CAMP_AREA,   HORDE_NO_PERIODIC_SPAWN},
+    {MK_ARROW_TURRET,   0,      {0},                                    {{0}},                          2,      4,     100,        WALL,   0,                      HORDE_NO_PERIODIC_SPAWN},
+    {MK_MONKEY,         1,      {MK_MONKEY},                            {{2,4,1}},                      2,      4,     20},
+    {MK_VAMPIRE_BAT,    0,      {0},                                    {{0}},                          2,      4,     30},
+    {MK_VAMPIRE_BAT,    1,      {MK_VAMPIRE_BAT},                       {{1,2,1}},                      2,      4,     70,      0,              0,              HORDE_NEVER_OOD},
+    {MK_ACID_MOUND,     0,      {0},                                    {{0}},                          2,      4,     100},
+    {MK_GOBLIN,         3,      {MK_GOBLIN, MK_GOBLIN_MYSTIC, MK_JACKAL},{{2, 3, 1}, {1,2,1}, {1,2,1}}, 3,      4,     40},
+    {MK_GOBLIN_CONJURER,2,      {MK_GOBLIN_CONJURER, MK_GOBLIN_MYSTIC}, {{0,1,1}, {1,1,1}},             3,      5,     40},
+    {MK_CENTIPEDE,      0,      {0},                                    {{0}},                          3,      5,     100},
+    {MK_BOG_MONSTER,    0,      {0},                                    {{0}},                          3,      5,     80,     MUD,            0,              HORDE_NEVER_OOD},
+    {MK_OGRE,           0,      {0},                                    {{0}},                          3,      4,     100},
+    {MK_EEL,            1,      {MK_EEL},                               {{2, 4, 1}},                    3,      5,     70,     DEEP_WATER},
+    {MK_ACID_MOUND,     1,      {MK_ACID_MOUND},                        {{2, 4, 1}},                    3,      4,     30},
+    {MK_SPIDER,         0,      {0},                                    {{0}},                          3,      5,     100},
+    {MK_DAR_BLADEMASTER,1,      {MK_DAR_BLADEMASTER},                   {{0, 1, 1}},                    4,     5,     100},
+    {MK_WILL_O_THE_WISP,0,      {0},                                    {{0}},                          4,     5,     100},
+    {MK_WRAITH,         0,      {0},                                    {{0}},                          4,     5,     100},
+    {MK_GOBLIN_TOTEM,   4,      {MK_GOBLIN_TOTEM, MK_GOBLIN_CONJURER, MK_GOBLIN_MYSTIC, MK_GOBLIN}, {{1,2,1},{1,2,1},{1,2,1},{3,5,1}},4,5,80,0,MT_CAMP_AREA,  HORDE_NO_PERIODIC_SPAWN},
+    {MK_SPARK_TURRET,   0,      {0},                                    {{0}},                          4,     5,     100,        WALL,   0,                      HORDE_NO_PERIODIC_SPAWN},
+    {MK_ZOMBIE,         0,      {0},                                    {{0}},                          4,     5,     100},
+    {MK_TROLL,          0,      {0},                                    {{0}},                          4,     5,     100},
+    {MK_OGRE_TOTEM,     1,      {MK_OGRE},                              {{2,4,1}},                      4,     5,     60,     0,          0,                  HORDE_NO_PERIODIC_SPAWN},
+    {MK_BOG_MONSTER,    1,      {MK_BOG_MONSTER},                       {{2,4,1}},                      4,     6,     100,        MUD},
+    {MK_NAGA,           0,      {0},                                    {{0}},                          4,     5,     100,        DEEP_WATER},
+    {MK_SALAMANDER,     0,      {0},                                    {{0}},                          4,     5,     100,        LAVA},
+    {MK_OGRE_SHAMAN,    1,      {MK_OGRE},                              {{1, 3, 1}},                    4,     5,     100},
+    {MK_CENTAUR,        1,      {MK_CENTAUR},                           {{1, 1, 1}},                    4,     5,     100},
+    {MK_ACID_JELLY,     0,      {0},                                    {{0}},                          4,     5,     100},
+    {MK_DART_TURRET,    0,      {0},                                    {{0}},                          5,     6,     100,        WALL,   0,                      HORDE_NO_PERIODIC_SPAWN},
+    {MK_PIXIE,          0,      {0},                                    {{0}},                          5,     6,     80},
+    {MK_FLAME_TURRET,   0,      {0},                                    {{0}},                          4,     6,     100,        WALL,   0,                      HORDE_NO_PERIODIC_SPAWN},
+    {MK_DAR_BLADEMASTER,2,      {MK_DAR_BLADEMASTER, MK_DAR_PRIESTESS}, {{0, 1, 1}, {0, 1, 1}},         5,     5,     100},
+    {MK_PINK_JELLY,     2,      {MK_PINK_JELLY, MK_DAR_PRIESTESS},      {{0, 1, 1}, {1, 2, 1}},         5,     6,     70},
+    {MK_KRAKEN,         0,      {0},                                    {{0}},                          5,     7,     100,        DEEP_WATER},
+    {MK_PHANTOM,        0,      {0},                                    {{0}},                          5,     6,     100},
+    {MK_WRAITH,         1,      {MK_WRAITH},                            {{1, 4, 1}},                    5,     6,     80},
+    {MK_IMP,            0,      {0},                                    {{0}},                          5,     264,     100},
+    {MK_DAR_BLADEMASTER,3,      {MK_DAR_BLADEMASTER, MK_DAR_PRIESTESS, MK_DAR_BATTLEMAGE},{{1,2,1},{1,1,1},{1,1,1}},5,6,100},
+    {MK_FURY,           1,      {MK_FURY},                              {{2, 4, 1}},                    5,     6,     80},
+    {MK_REVENANT,       0,      {0},                                    {{0}},                          5,     7,     100},
+    {MK_GOLEM,          0,      {0},                                    {{0}},                          5,     7,     100},
+    {MK_TENTACLE_HORROR,0,      {0},                                    {{0}},                          5,     DEEPEST_LEVEL-1,        100},
+    {MK_PHYLACTERY,     0,      {0},                                    {{0}},                          5,     DEEPEST_LEVEL-1,        100},
+    {MK_DRAGON,         0,      {0},                                    {{0}},                          6,     DEEPEST_LEVEL-1,        70},
+    {MK_DRAGON,         1,      {MK_DRAGON},                            {{1,1,1}},                      7,     DEEPEST_LEVEL-1,        30},
+    {MK_GOLEM,          3,      {MK_GOLEM, MK_DAR_PRIESTESS, MK_DAR_BATTLEMAGE}, {{1, 2, 1}, {0,1,1},{0,1,1}},7,DEEPEST_LEVEL-1,   80},
+    {MK_GOLEM,          1,      {MK_GOLEM},                             {{5, 10, 2}},                   7,     DEEPEST_LEVEL-1,    20},
+    {MK_KRAKEN,         1,      {MK_KRAKEN},                            {{5, 10, 2}},                   7,     DEEPEST_LEVEL-1,    100,        DEEP_WATER},
+    {MK_TENTACLE_HORROR,2,      {MK_TENTACLE_HORROR, MK_REVENANT},      {{1, 3, 1}, {2, 4, 1}},         8,     DEEPEST_LEVEL-1,    20},
+    {MK_DRAGON,         1,      {MK_DRAGON},                            {{3, 5, 1}},                    8,     DEEPEST_LEVEL-1,    20},
+
+    // summons
+    {MK_GOBLIN_CONJURER,1,      {MK_SPECTRAL_BLADE},                    {{3, 5, 1}},                    0,      0,      100,    0,          0,                  HORDE_IS_SUMMONED | HORDE_DIES_ON_LEADER_DEATH},
+    {MK_OGRE_SHAMAN,    1,      {MK_OGRE},                              {{1, 1, 1}},                    0,      0,      100,    0,          0,                  HORDE_IS_SUMMONED},
+    {MK_VAMPIRE,        1,      {MK_VAMPIRE_BAT},                       {{3, 3, 1}},                    0,      0,      100,    0,          0,                  HORDE_IS_SUMMONED},
+    {MK_LICH,           1,      {MK_PHANTOM},                           {{2, 3, 1}},                    0,      0,      100,    0,          0,                  HORDE_IS_SUMMONED},
+    {MK_LICH,           1,      {MK_FURY},                              {{2, 3, 1}},                    0,      0,      100,    0,          0,                  HORDE_IS_SUMMONED},
+    {MK_PHYLACTERY,     1,      {MK_LICH},                              {{1,1,1}},                      0,      0,      100,    0,          0,                  HORDE_IS_SUMMONED},
+    {MK_GOBLIN_CHIEFTAN,2,      {MK_GOBLIN_CONJURER, MK_GOBLIN},        {{1,1,1}, {3,4,1}},             0,      0,      100,    0,          0,                  HORDE_IS_SUMMONED | HORDE_SUMMONED_AT_DISTANCE},
+    {MK_PHOENIX_EGG,    1,      {MK_PHOENIX},                           {{1,1,1}},                      0,      0,      100,    0,          0,                  HORDE_IS_SUMMONED},
+    {MK_ELDRITCH_TOTEM, 1,      {MK_SPECTRAL_BLADE},                    {{4, 7, 1}},                    0,      0,      100,    0,          0,                  HORDE_IS_SUMMONED | HORDE_DIES_ON_LEADER_DEATH},
+    {MK_ELDRITCH_TOTEM, 1,      {MK_FURY},                              {{2, 3, 1}},                    0,      0,      100,    0,          0,                  HORDE_IS_SUMMONED | HORDE_DIES_ON_LEADER_DEATH},
+
+    // captives
+    {MK_MONKEY,         1,      {MK_KOBOLD},                            {{1, 2, 1}},                    1,      1,      10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_GOBLIN,         1,      {MK_GOBLIN},                            {{1, 2, 1}},                    1,      2,      10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_OGRE,           1,      {MK_GOBLIN},                            {{3, 5, 1}},                    1,      3,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_GOBLIN_MYSTIC,  1,      {MK_KOBOLD},                            {{3, 7, 1}},                    2,      4,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_OGRE,           1,      {MK_OGRE},                              {{1, 2, 1}},                    3,      5,     20,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_TROLL,          1,      {MK_TROLL},                             {{1, 2, 1}},                    4,     5,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_CENTAUR,        1,      {MK_TROLL},                             {{1, 2, 1}},                    4,     5,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_TROLL,          2,      {MK_OGRE, MK_OGRE_SHAMAN},              {{2, 3, 1}, {0, 1, 1}},         5,     5,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_DAR_BLADEMASTER,1,      {MK_TROLL},                             {{1, 2, 1}},                    4,     5,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_NAGA,           1,      {MK_SALAMANDER},                        {{1, 2, 1}},                    4,     5,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_SALAMANDER,     1,      {MK_NAGA},                              {{1, 2, 1}},                    4,     5,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_TROLL,          1,      {MK_SALAMANDER},                        {{1, 2, 1}},                    4,     5,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_IMP,            1,      {MK_FURY},                              {{2, 4, 1}},                    5,     6,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_PIXIE,          1,      {MK_IMP, MK_PHANTOM},                   {{1, 2, 1}, {1, 2, 1}},         4,     5,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_DAR_BLADEMASTER,1,      {MK_FURY},                              {{2, 4, 1}},                    5,     6,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_DAR_BLADEMASTER,1,      {MK_IMP},                               {{2, 3, 1}},                    5,     6,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_DAR_PRIESTESS,  1,      {MK_FURY},                              {{2, 4, 1}},                    5,     6,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_DAR_BATTLEMAGE, 1,      {MK_IMP},                               {{2, 3, 1}},                    5,     6,     10,     0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_TENTACLE_HORROR,3,      {MK_DAR_BLADEMASTER, MK_DAR_PRIESTESS, MK_DAR_BATTLEMAGE},{{1,2,1},{1,1,1},{1,1,1}},5,6,10,   0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+    {MK_GOLEM,          3,      {MK_DAR_BLADEMASTER, MK_DAR_PRIESTESS, MK_DAR_BATTLEMAGE},{{1,2,1},{1,1,1},{1,1,1}},5,6,10,   0,          0,                  HORDE_LEADER_CAPTIVE | HORDE_NEVER_OOD},
+
+    // bosses
+    {MK_GOBLIN_CHIEFTAN,2,      {MK_GOBLIN_MYSTIC, MK_GOBLIN, MK_GOBLIN_TOTEM}, {{1,1,1}, {2,3,1}, {2,2,1}},1,  4,     50,     0,          0,                  HORDE_MACHINE_BOSS},
+    {MK_BLACK_JELLY,    0,      {0},                                    {{0}},                          2,      4,     50,     0,          0,                  HORDE_MACHINE_BOSS},
+    {MK_VAMPIRE,        0,      {0},                                    {{0}},                          4,     DEEPEST_LEVEL,  50,  0,     0,                  HORDE_MACHINE_BOSS},
+    {MK_FLAMEDANCER,    0,      {0},                                    {{0}},                          4,     DEEPEST_LEVEL,  50,  0,     0,                  HORDE_MACHINE_BOSS},
+
+    // machine water monsters
+    {MK_EEL,            0,      {0},                                    {{0}},                          1,      3,      100,        DEEP_WATER, 0,                  HORDE_MACHINE_WATER_MONSTER},
+    {MK_EEL,            1,      {MK_EEL},                               {{2, 4, 1}},                    2,      5,     100,        DEEP_WATER, 0,                  HORDE_MACHINE_WATER_MONSTER},
+    {MK_KRAKEN,         0,      {0},                                    {{0}},                          4,     DEEPEST_LEVEL,  100,    DEEP_WATER, 0,              HORDE_MACHINE_WATER_MONSTER},
+    {MK_KRAKEN,         1,      {MK_EEL},                               {{1, 2, 1}},                    4,     DEEPEST_LEVEL,  80, DEEP_WATER, 0,              HORDE_MACHINE_WATER_MONSTER},
+
+    // dungeon captives -- no captors
+    {MK_OGRE,           0,      {0},                                    {{0}},                          2,      4,     100,        0,          0,                  HORDE_MACHINE_CAPTIVE | HORDE_LEADER_CAPTIVE},
+    {MK_NAGA,           0,      {0},                                    {{0}},                          4,     5,     50,     0,          0,                  HORDE_MACHINE_CAPTIVE | HORDE_LEADER_CAPTIVE},
+    {MK_GOBLIN_MYSTIC,  0,      {0},                                    {{0}},                          1,      3,      100,        0,          0,                  HORDE_MACHINE_CAPTIVE | HORDE_LEADER_CAPTIVE},
+    {MK_TROLL,          0,      {0},                                    {{0}},                          4,     5,     50,     0,          0,                  HORDE_MACHINE_CAPTIVE | HORDE_LEADER_CAPTIVE},
+    {MK_DAR_BLADEMASTER,0,      {0},                                    {{0}},                          3,      5,     100,        0,          0,                  HORDE_MACHINE_CAPTIVE | HORDE_LEADER_CAPTIVE},
+    {MK_DAR_PRIESTESS,  0,      {0},                                    {{0}},                          3,      5,     100,        0,          0,                  HORDE_MACHINE_CAPTIVE | HORDE_LEADER_CAPTIVE},
+    {MK_WRAITH,         0,      {0},                                    {{0}},                          4,     5,     100,        0,          0,                  HORDE_MACHINE_CAPTIVE | HORDE_LEADER_CAPTIVE},
+    {MK_GOLEM,          0,      {0},                                    {{0}},                          4,     6,     100,        0,          0,                  HORDE_MACHINE_CAPTIVE | HORDE_LEADER_CAPTIVE},
+    {MK_TENTACLE_HORROR,0,      {0},                                    {{0}},                          5,     AMULET_LEVEL,100,0,         0,                  HORDE_MACHINE_CAPTIVE | HORDE_LEADER_CAPTIVE},
+    {MK_DRAGON,         0,      {0},                                    {{0}},                          5,     AMULET_LEVEL,100,0,         0,                  HORDE_MACHINE_CAPTIVE | HORDE_LEADER_CAPTIVE},
+
+    // machine statue monsters
+    {MK_GOBLIN,         0,      {0},                                    {{0}},                          1,      2,      100,        STATUE_DORMANT, 0,              HORDE_MACHINE_STATUE},
+    {MK_OGRE,           0,      {0},                                    {{0}},                          2,      4,     100,        STATUE_DORMANT, 0,              HORDE_MACHINE_STATUE},
+    {MK_WRAITH,         0,      {0},                                    {{0}},                          4,     5,     100,        STATUE_DORMANT, 0,              HORDE_MACHINE_STATUE},
+    {MK_NAGA,           0,      {0},                                    {{0}},                          4,     5,     100,        STATUE_DORMANT, 0,              HORDE_MACHINE_STATUE},
+    {MK_TROLL,          0,      {0},                                    {{0}},                          4,     5,     100,        STATUE_DORMANT, 0,              HORDE_MACHINE_STATUE},
+    {MK_GOLEM,          0,      {0},                                    {{0}},                          5,     7,     100,        STATUE_DORMANT, 0,              HORDE_MACHINE_STATUE},
+    {MK_DRAGON,         0,      {0},                                    {{0}},                          7,     DEEPEST_LEVEL,  100,    STATUE_DORMANT, 0,          HORDE_MACHINE_STATUE},
+    {MK_TENTACLE_HORROR,0,      {0},                                    {{0}},                          7,     DEEPEST_LEVEL,  100,    STATUE_DORMANT, 0,          HORDE_MACHINE_STATUE},
+
+    // machine turrets
+    {MK_ARROW_TURRET,   0,      {0},                                    {{0}},                          2,      4,     100,        TURRET_DORMANT, 0,              HORDE_MACHINE_TURRET},
+    {MK_SPARK_TURRET,   0,      {0},                                    {{0}},                          4,     5,     100,        TURRET_DORMANT, 0,              HORDE_MACHINE_TURRET},
+    {MK_DART_TURRET,    0,      {0},                                    {{0}},                          5,     6,     100,        TURRET_DORMANT, 0,              HORDE_MACHINE_TURRET},
+    {MK_FLAME_TURRET,   0,      {0},                                    {{0}},                          5,     6,     100,        TURRET_DORMANT, 0,              HORDE_MACHINE_TURRET},
+
+    // machine mud monsters
+    {MK_BOG_MONSTER,    0,      {0},                                    {{0}},                          4,     6,     100,        MACHINE_MUD_DORMANT, 0,         HORDE_MACHINE_MUD},
+    {MK_KRAKEN,         0,      {0},                                    {{0}},                          5,     6,     30,     MACHINE_MUD_DORMANT, 0,         HORDE_MACHINE_MUD},
+
+    // kennel monsters
+    {MK_MONKEY,         0,      {0},                                    {{0}},                          1,      2,      100,        MONSTER_CAGE_CLOSED, 0,         HORDE_MACHINE_KENNEL | HORDE_LEADER_CAPTIVE},
+    {MK_GOBLIN,         0,      {0},                                    {{0}},                          1,      3,      100,        MONSTER_CAGE_CLOSED, 0,         HORDE_MACHINE_KENNEL | HORDE_LEADER_CAPTIVE},
+    {MK_GOBLIN_CONJURER,0,      {0},                                    {{0}},                          1,      3,      100,        MONSTER_CAGE_CLOSED, 0,         HORDE_MACHINE_KENNEL | HORDE_LEADER_CAPTIVE},
+    {MK_GOBLIN_MYSTIC,  0,      {0},                                    {{0}},                          1,      3,      100,        MONSTER_CAGE_CLOSED, 0,         HORDE_MACHINE_KENNEL | HORDE_LEADER_CAPTIVE},
+    {MK_OGRE,           0,      {0},                                    {{0}},                          3,      5,     100,        MONSTER_CAGE_CLOSED, 0,         HORDE_MACHINE_KENNEL | HORDE_LEADER_CAPTIVE},
+    {MK_TROLL,          0,      {0},                                    {{0}},                          4,     5,     100,        MONSTER_CAGE_CLOSED, 0,         HORDE_MACHINE_KENNEL | HORDE_LEADER_CAPTIVE},
+    {MK_NAGA,           0,      {0},                                    {{0}},                          4,     6,     100,        MONSTER_CAGE_CLOSED, 0,         HORDE_MACHINE_KENNEL | HORDE_LEADER_CAPTIVE},
+    {MK_SALAMANDER,     0,      {0},                                    {{0}},                          3,      5,     100,        MONSTER_CAGE_CLOSED, 0,         HORDE_MACHINE_KENNEL | HORDE_LEADER_CAPTIVE},
+    {MK_IMP,            0,      {0},                                    {{0}},                          5,     6,     100,        MONSTER_CAGE_CLOSED, 0,         HORDE_MACHINE_KENNEL | HORDE_LEADER_CAPTIVE},
+    {MK_PIXIE,          0,      {0},                                    {{0}},                          4,     5,     100,        MONSTER_CAGE_CLOSED, 0,         HORDE_MACHINE_KENNEL | HORDE_LEADER_CAPTIVE},
+    {MK_DAR_BLADEMASTER,0,      {0},                                    {{0}},                          3,      AMULET_LEVEL, 100, MONSTER_CAGE_CLOSED, 0,      HORDE_MACHINE_KENNEL | HORDE_LEADER_CAPTIVE},
+    {MK_DAR_PRIESTESS,  0,      {0},                                    {{0}},                          4,     AMULET_LEVEL, 100, MONSTER_CAGE_CLOSED, 0,      HORDE_MACHINE_KENNEL | HORDE_LEADER_CAPTIVE},
+    {MK_DAR_BATTLEMAGE, 0,      {0},                                    {{0}},                          4,     AMULET_LEVEL, 100, MONSTER_CAGE_CLOSED, 0,      HORDE_MACHINE_KENNEL | HORDE_LEADER_CAPTIVE},
+
+    // vampire bloodbags
+    {MK_MONKEY,         0,      {0},                                    {{0}},                          1,      2,      100,        MONSTER_CAGE_CLOSED, 0,         HORDE_VAMPIRE_FODDER | HORDE_LEADER_CAPTIVE},
+    {MK_GOBLIN,         0,      {0},                                    {{0}},                          1,      3,      100,        MONSTER_CAGE_CLOSED, 0,         HORDE_VAMPIRE_FODDER | HORDE_LEADER_CAPTIVE},
+    {MK_GOBLIN_CONJURER,0,      {0},                                    {{0}},                          1,      3,      100,        MONSTER_CAGE_CLOSED, 0,         HORDE_VAMPIRE_FODDER | HORDE_LEADER_CAPTIVE},
+    {MK_GOBLIN_MYSTIC,  0,      {0},                                    {{0}},                          1,      3,      100,        MONSTER_CAGE_CLOSED, 0,         HORDE_VAMPIRE_FODDER | HORDE_LEADER_CAPTIVE},
+    {MK_OGRE,           0,      {0},                                    {{0}},                          2,      5,     100,        MONSTER_CAGE_CLOSED, 0,         HORDE_VAMPIRE_FODDER | HORDE_LEADER_CAPTIVE},
+    {MK_TROLL,          0,      {0},                                    {{0}},                          4,     5,     100,        MONSTER_CAGE_CLOSED, 0,         HORDE_VAMPIRE_FODDER | HORDE_LEADER_CAPTIVE},
+    {MK_NAGA,           0,      {0},                                    {{0}},                          3,      5,     100,        MONSTER_CAGE_CLOSED, 0,         HORDE_VAMPIRE_FODDER | HORDE_LEADER_CAPTIVE},
+    {MK_IMP,            0,      {0},                                    {{0}},                          5,     AMULET_LEVEL,100,MONSTER_CAGE_CLOSED, 0,            HORDE_VAMPIRE_FODDER | HORDE_LEADER_CAPTIVE},
+    {MK_PIXIE,          0,      {0},                                    {{0}},                          4,     5,     100,        MONSTER_CAGE_CLOSED, 0,         HORDE_VAMPIRE_FODDER | HORDE_LEADER_CAPTIVE},
+    {MK_DAR_BLADEMASTER,0,      {0},                                    {{0}},                          3,      AMULET_LEVEL,100,MONSTER_CAGE_CLOSED, 0,            HORDE_VAMPIRE_FODDER | HORDE_LEADER_CAPTIVE},
+    {MK_DAR_PRIESTESS,  0,      {0},                                    {{0}},                          4,     AMULET_LEVEL,100,MONSTER_CAGE_CLOSED, 0,            HORDE_VAMPIRE_FODDER | HORDE_LEADER_CAPTIVE},
+    {MK_DAR_BATTLEMAGE, 0,      {0},                                    {{0}},                          4,     AMULET_LEVEL,100,MONSTER_CAGE_CLOSED, 0,            HORDE_VAMPIRE_FODDER | HORDE_LEADER_CAPTIVE},
+
+    // key thieves
+    {MK_MONKEY,         0,      {0},                                    {{0}},                          1,      4,     100,     0,          0,                  HORDE_MACHINE_THIEF},
+    {MK_IMP,            0,      {0},                                    {{0}},                          5,     DEEPEST_LEVEL,  100, 0,      0,                  HORDE_MACHINE_THIEF},
+
+    // sacrifice victims
+    {MK_MONKEY,         0,      {0},                                    {{0}},                          1,      2,      100,        STATUE_INSTACRACK, 0,           HORDE_SACRIFICE_TARGET},
+    {MK_GOBLIN,         0,      {0},                                    {{0}},                          1,      3,     100,        STATUE_INSTACRACK, 0,           HORDE_SACRIFICE_TARGET},
+    {MK_OGRE,           0,      {0},                                    {{0}},                          3,      4,     100,        STATUE_INSTACRACK, 0,           HORDE_SACRIFICE_TARGET},
+    {MK_TROLL,          0,      {0},                                    {{0}},                          4,     5,     100,        STATUE_INSTACRACK, 0,           HORDE_SACRIFICE_TARGET},
+    {MK_WRAITH,         0,      {0},                                    {{0}},                          4,     5,     100,        STATUE_INSTACRACK, 0,           HORDE_SACRIFICE_TARGET},
+    {MK_NAGA,           0,      {0},                                    {{0}},                          4,     5,     100,        STATUE_INSTACRACK, 0,           HORDE_SACRIFICE_TARGET},
+    {MK_DAR_BLADEMASTER,0,      {0},                                    {{0}},                          4,     5,     100,        STATUE_INSTACRACK, 0,           HORDE_SACRIFICE_TARGET},
+    {MK_GOLEM,          0,      {0},                                    {{0}},                          5,     DEEPEST_LEVEL,100,  STATUE_INSTACRACK, 0,           HORDE_SACRIFICE_TARGET},
+    {MK_REVENANT,       0,      {0},                                    {{0}},                          5,     DEEPEST_LEVEL,100,  STATUE_INSTACRACK, 0,           HORDE_SACRIFICE_TARGET},
+    {MK_TENTACLE_HORROR,0,      {0},                                    {{0}},                          22,     DEEPEST_LEVEL,100,  STATUE_INSTACRACK, 0,           HORDE_SACRIFICE_TARGET},
+
+    // legendary allies
+    {MK_UNICORN,        0,      {0},                                    {{0}},                          1,      DEEPEST_LEVEL,  100, 0,     0,                  HORDE_MACHINE_LEGENDARY_ALLY | HORDE_ALLIED_WITH_PLAYER},
+    {MK_IFRIT,          0,      {0},                                    {{0}},                          1,      DEEPEST_LEVEL,  100,    0,      0,                  HORDE_MACHINE_LEGENDARY_ALLY | HORDE_ALLIED_WITH_PLAYER},
+    {MK_PHOENIX_EGG,    0,      {0},                                    {{0}},                          1,      DEEPEST_LEVEL,  100,    0,      0,                  HORDE_MACHINE_LEGENDARY_ALLY | HORDE_ALLIED_WITH_PLAYER},
+    {MK_ANCIENT_SPIRIT, 0,      {0},                                    {{0}},                          1,      DEEPEST_LEVEL,  100,    0,      0,                  HORDE_MACHINE_LEGENDARY_ALLY | HORDE_ALLIED_WITH_PLAYER},
+
+    // goblin warren
+    {MK_GOBLIN,         0,      {0},                                    {{0}},                          1,      4,     100,     0,              0,              HORDE_MACHINE_GOBLIN_WARREN},
+    {MK_GOBLIN_CONJURER,0,      {0},                                    {{0}},                          1,      4,     60,      0,              0,              HORDE_MACHINE_GOBLIN_WARREN},
+    {MK_GOBLIN_TOTEM,   1,      {MK_GOBLIN},                            {{2,4,1}},                      2,      4,     100,        0,              MT_CAMP_AREA,   HORDE_MACHINE_GOBLIN_WARREN},
+    {MK_GOBLIN,         3,      {MK_GOBLIN, MK_GOBLIN_MYSTIC, MK_JACKAL},{{2, 3, 1}, {1,2,1}, {1,2,1}}, 2,      4,     40,      0,              0,              HORDE_MACHINE_GOBLIN_WARREN},
+    {MK_GOBLIN_CONJURER,2,      {MK_GOBLIN_CONJURER, MK_GOBLIN_MYSTIC}, {{0,1,1}, {1,1,1}},             3,      5,     40,      0,              0,              HORDE_MACHINE_GOBLIN_WARREN},
+    {MK_GOBLIN_TOTEM,   4,      {MK_GOBLIN_TOTEM, MK_GOBLIN_CONJURER, MK_GOBLIN_MYSTIC, MK_GOBLIN}, {{1,2,1},{1,2,1},{1,2,1},{3,5,1}},10,17,80,0,MT_CAMP_AREA,  HORDE_MACHINE_GOBLIN_WARREN},
+    {MK_GOBLIN,         1,      {MK_GOBLIN},                            {{1, 2, 1}},                    1,      3,      10,     0,              0,              HORDE_MACHINE_GOBLIN_WARREN | HORDE_LEADER_CAPTIVE},
+};
+#else
 const hordeType hordeCatalog[NUMBER_HORDES] = {
     // leader       #members    member list                             member numbers                  minL    maxL    freq    spawnsIn        machine         flags
     {MK_RAT,            0,      {0},                                    {{0}},                          1,      5,      150},
@@ -2164,6 +2372,7 @@ const hordeType hordeCatalog[NUMBER_HORDES] = {
     {MK_GOBLIN_TOTEM,   4,      {MK_GOBLIN_TOTEM, MK_GOBLIN_CONJURER, MK_GOBLIN_MYSTIC, MK_GOBLIN}, {{1,2,1},{1,2,1},{1,2,1},{3,5,1}},10,17,80,0,MT_CAMP_AREA,  HORDE_MACHINE_GOBLIN_WARREN},
     {MK_GOBLIN,         1,      {MK_GOBLIN},                            {{1, 2, 1}},                    3,      7,      10,     0,              0,              HORDE_MACHINE_GOBLIN_WARREN | HORDE_LEADER_CAPTIVE},
 };
+#endif
 
 const monsterClass monsterClassCatalog[MONSTER_CLASS_COUNT] = {
     // name             frequency   maxDepth    member list

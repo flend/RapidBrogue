@@ -45,11 +45,11 @@
 #define STRINGIFY(x) _str(x)
 
 // Brogue version: what the user sees in the menu and title
-#define BROGUE_VERSION_STRING "CE " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) "." STRINGIFY(BROGUE_PATCH) BROGUE_EXTRA_VERSION
+#define BROGUE_VERSION_STRING "RB " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) "." STRINGIFY(BROGUE_PATCH) BROGUE_EXTRA_VERSION
 
 // Recording version. Saved into recordings and save files made by this version.
 // Cannot be longer than 16 chars
-#define BROGUE_RECORDING_VERSION_STRING "CE " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) "." STRINGIFY(BROGUE_PATCH)
+#define BROGUE_RECORDING_VERSION_STRING "RB " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) "." STRINGIFY(BROGUE_PATCH)
 
 /* Patch pattern. A scanf format string which matches an unsigned short. If this
 matches against a recording version string, it defines a "patch version." During
@@ -61,10 +61,10 @@ which is equal or less than the patch version of the current game
 (rogue.patchLevel is set to the recording's); or b) it doesn't match the version
 strings, but they are equal (rogue.patchLevel is set to 0).
 */
-#define BROGUE_PATCH_VERSION_PATTERN "CE " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) ".%hu"
+#define BROGUE_PATCH_VERSION_PATTERN "RB " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) ".%hu"
 
 // Dungeon version. Used in seed catalog output.
-#define BROGUE_DUNGEON_VERSION_STRING "CE 1.9"
+#define BROGUE_DUNGEON_VERSION_STRING "RB 1.9"
 
 // Macro to compare BROGUE_MAJOR.BROGUE_MINOR.patchVersion to a.b.c
 #define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_MAJOR != (a) ? BROGUE_MAJOR > (a) : BROGUE_MINOR != (b) ? BROGUE_MINOR > (b) : rogue.patchVersion >= (c))
@@ -81,10 +81,10 @@ strings, but they are equal (rogue.patchLevel is set to 0).
 #define D_SCENT_VISION                  (rogue.wizard && 0)
 #define D_DISABLE_BACKGROUND_COLORS     (rogue.wizard && 0)
 
-#define D_INSPECT_LEVELGEN              (rogue.wizard && 0)
-#define D_INSPECT_MACHINES              (rogue.wizard && 0)
+#define D_INSPECT_LEVELGEN              (rogue.wizard && 1)
+#define D_INSPECT_MACHINES              (rogue.wizard && 1)
 
-#define D_MESSAGE_ITEM_GENERATION       (rogue.wizard && 0)
+#define D_MESSAGE_ITEM_GENERATION       (rogue.wizard && 1)
 #define D_MESSAGE_MACHINE_GENERATION    (rogue.wizard && 0)
 
 // set to false to allow multiple loads from the same saved file:
@@ -161,12 +161,35 @@ typedef long long fixpt;
 
 #define VISIBILITY_THRESHOLD    50          // how bright cumulative light has to be before the cell is marked visible
 
+#ifdef RAPID_BROGUE
+#define AMULET_LEVEL            6          // how deep before the amulet appears
+#define DEEPEST_LEVEL           10          // how deep the universe goes
+#else
 #define AMULET_LEVEL            26          // how deep before the amulet appears
 #define DEEPEST_LEVEL           40          // how deep the universe goes
+#endif
 
+#ifdef RAPID_BROGUE
+#define MACHINES_FACTOR         FP_FACTOR << 2   // use this to adjust machine frequency
+#else
 #define MACHINES_FACTOR         FP_FACTOR   // use this to adjust machine frequency
+#endif
 
 #define MACHINES_BUFFER_LENGTH  200
+
+#ifdef RAPID_BROGUE
+#define MINIMUM_LAVA_LEVEL 2
+#define MINIMUM_BRIMSTONE_LEVEL 5
+#else
+#define MINIMUM_LAVA_LEVEL 4
+#define MINIMUM_BRIMSTONE_LEVEL 17
+#endif
+
+#ifdef RAPID_BROGUE
+#define BRIDGE_LEVEL_RATIO 2
+#else
+#define BRIDGE_LEVEL_RATIO 9
+#endif
 
 #define WEAPON_KILLS_TO_AUTO_ID 20
 #define ARMOR_DELAY_TO_AUTO_ID  1000

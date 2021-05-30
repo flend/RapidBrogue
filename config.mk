@@ -12,8 +12,10 @@ SDL_CONFIG := sdl2-config
 # Select web brogue mode. Requires POSIX system.
 WEBBROGUE := NO
 
+RAPIDBROGUE := YES
+
 # Enable debugging mode. See top of Rogue.h for features
-DEBUG := NO
+DEBUG := YES
 
 # Declare this is a release build
 RELEASE := NO
