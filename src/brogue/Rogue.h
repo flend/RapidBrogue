@@ -81,7 +81,7 @@ strings, but they are equal (rogue.patchLevel is set to 0).
 #define D_SCENT_VISION                  (rogue.wizard && 0)
 #define D_DISABLE_BACKGROUND_COLORS     (rogue.wizard && 0)
 
-#define D_INSPECT_LEVELGEN              (rogue.wizard && 1)
+#define D_INSPECT_LEVELGEN              (rogue.wizard && 0)
 #define D_INSPECT_MACHINES              (rogue.wizard && 1)
 
 #define D_MESSAGE_ITEM_GENERATION       (rogue.wizard && 1)
@@ -170,9 +170,9 @@ typedef long long fixpt;
 #endif
 
 #ifdef RAPID_BROGUE
-#define MACHINES_FACTOR         FP_FACTOR << 2   // use this to adjust machine frequency
+#define MACHINES_FACTOR         4   // use this to adjust machine frequency
 #else
-#define MACHINES_FACTOR         FP_FACTOR   // use this to adjust machine frequency
+#define MACHINES_FACTOR         1   // use this to adjust machine frequency
 #endif
 
 #define MACHINES_BUFFER_LENGTH  200
