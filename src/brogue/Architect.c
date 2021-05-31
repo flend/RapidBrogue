@@ -1725,11 +1725,17 @@ void addMachines() {
         // try to build at least one every four levels on average
         machineCount++;
     }
+#ifdef RAPID_BROGUE
+    //Only emphasise the first level otherwise there's a famine of interesting rooms later
+    randomMachineFactor = (rogue.depthLevel < 2 && (rogue.rewardRoomsGenerated + machineCount) == 0 ? 40 : 15);
+#else
     randomMachineFactor = (rogue.depthLevel < 3 && (rogue.rewardRoomsGenerated + machineCount) == 0 ? 40 : 15);
+#endif
     while (rand_percent(max(randomMachineFactor, 15 * MACHINES_FACTOR)) && machineCount < 100) {
         randomMachineFactor = 15;
         machineCount++;
     }
+
 
     for (failsafe = 50; machineCount && failsafe; failsafe--) {
         if (buildAMachine(-1, -1, -1, BP_REWARD, NULL, NULL, NULL)) {

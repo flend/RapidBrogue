@@ -87,6 +87,8 @@ strings, but they are equal (rogue.patchLevel is set to 0).
 #define D_MESSAGE_ITEM_GENERATION       (rogue.wizard && 1)
 #define D_MESSAGE_MACHINE_GENERATION    (rogue.wizard && 0)
 
+#define D_ALWAYS_OMNISCENCE             (rogue.wizard && 1)
+
 // set to false to allow multiple loads from the same saved file:
 #define DELETE_SAVE_FILE_AFTER_LOADING  true
 
@@ -170,7 +172,7 @@ typedef long long fixpt;
 #endif
 
 #ifdef RAPID_BROGUE
-#define MACHINES_FACTOR         3   // use this to adjust machine frequency
+#define MACHINES_FACTOR         4   // use this to adjust machine frequency
 #else
 #define MACHINES_FACTOR         1   // use this to adjust machine frequency
 #endif
