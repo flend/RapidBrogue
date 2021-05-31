@@ -1721,17 +1721,25 @@ void addMachines() {
     // Add reward rooms, if any:
     machineCount = 0;
     while (rogue.depthLevel <= AMULET_LEVEL
+#ifdef RAPID_BROGUE
+        && (rogue.rewardRoomsGenerated + machineCount) * 2 < rogue.depthLevel * MACHINES_FACTOR) {
+#else
         && (rogue.rewardRoomsGenerated + machineCount) * 4 + 2 < rogue.depthLevel * MACHINES_FACTOR) {
+#endif
         // try to build at least one every four levels on average
+        if (D_MESSAGE_MACHINE_GENERATION) printf("\n(mc)Depth %i: generated a machine, machines so far %i", rogue.depthLevel, (rogue.rewardRoomsGenerated + machineCount));
         machineCount++;
     }
 #ifdef RAPID_BROGUE
     //Only emphasise the first level otherwise there's a famine of interesting rooms later
     randomMachineFactor = (rogue.depthLevel < 2 && (rogue.rewardRoomsGenerated + machineCount) == 0 ? 40 : 15);
-#else
-    randomMachineFactor = (rogue.depthLevel < 3 && (rogue.rewardRoomsGenerated + machineCount) == 0 ? 40 : 15);
-#endif
     while (rand_percent(max(randomMachineFactor, 15 * MACHINES_FACTOR)) && machineCount < 100) {
+#else
+    randomMachineFactor = (rogue.depthLevel < 3 && (rogue.rewardRoomsGenerated + machineCount) == 0 ? 60 : 15);
+    while (rand_percent(max(randomMachineFactor, 15)) && machineCount < 100) {
+#endif
+        if (D_MESSAGE_MACHINE_GENERATION) printf("\n(mc)Depth %i: randomly generated a machine, machines so far %i", rogue.depthLevel, (rogue.rewardRoomsGenerated + machineCount));
+
         randomMachineFactor = 15;
         machineCount++;
     }

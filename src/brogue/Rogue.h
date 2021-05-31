@@ -85,7 +85,7 @@ strings, but they are equal (rogue.patchLevel is set to 0).
 #define D_INSPECT_MACHINES              (rogue.wizard && 1)
 
 #define D_MESSAGE_ITEM_GENERATION       (rogue.wizard && 1)
-#define D_MESSAGE_MACHINE_GENERATION    (rogue.wizard && 0)
+#define D_MESSAGE_MACHINE_GENERATION    (rogue.wizard && 1)
 
 #define D_ALWAYS_OMNISCENCE             (rogue.wizard && 1)
 
