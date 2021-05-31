@@ -2372,6 +2372,11 @@ typedef struct playerCharacter {
     short lifePotionsSpawned;
     short strengthPotionFrequency;
     short enchantScrollFrequency;
+#ifdef RAPID_BROGUE
+    int enchantmentScrollsSpawned;
+    int strengthPotionsSpawned;
+    int detectMagicPotionsSpawned;
+#endif
 
     // ring bonuses:
     short clairvoyance;

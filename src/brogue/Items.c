@@ -75,7 +75,11 @@ item *generateItem(unsigned short theCategory, short theKind) {
 
 unsigned long pickItemCategory(unsigned long theCategory) {
     short i, sum, randIndex;
+#ifdef RAPID_BROGUE
+    short probabilities[13] =                       {50,    84,     104,     3,      3,      10,     8,      2,      3,      2,        0,        0,      0};
+#else
     short probabilities[13] =                       {50,    42,     52,     3,      3,      10,     8,      2,      3,      2,        0,        0,      0};
+#endif
     unsigned short correspondingCategories[13] =    {GOLD,  SCROLL, POTION, STAFF,  WAND,   WEAPON, ARMOR,  FOOD,   RING,   CHARM,    AMULET,   GEM,    KEY};
 
     sum = 0;
@@ -510,12 +514,17 @@ void populateItems(short upstairsX, short upstairsY) {
 #endif
 
     if (rogue.depthLevel > AMULET_LEVEL) {
+#ifdef RAPID_BROGUE
+        const short lumenstoneDistribution[4] = {6, 6, 6, 6};
+        numberOfItems = lumenstoneDistribution[rogue.depthLevel - AMULET_LEVEL - 1];
+#else
         if (rogue.depthLevel - AMULET_LEVEL - 1 >= 8) {
             numberOfItems = 1;
         } else {
             const short lumenstoneDistribution[8] = {3, 3, 3, 2, 2, 2, 2, 2};
             numberOfItems = lumenstoneDistribution[rogue.depthLevel - AMULET_LEVEL - 1];
         }
+#endif
         numberOfGoldPiles = 0;
     } else {
         rogue.lifePotionFrequency += 34;
@@ -530,6 +539,9 @@ void populateItems(short upstairsX, short upstairsY) {
         } else if (rogue.depthLevel <= 4) {
             numberOfItems++; // and 2 more here
         }
+#ifdef RAPID_BROGUE
+        numberOfItems += 4; // 4 extra items in rapid brogue, accounting for extra guaranteed potions and scrolls. We also bias weights to consumables (since there are so many vaults)
+#endif
 
         numberOfGoldPiles = min(5, rogue.depthLevel / 4);
         for (goldBonusProbability = 60;
@@ -619,8 +631,13 @@ void populateItems(short upstairsX, short upstairsY) {
         potionTable[POTION_LIFE].frequency = rogue.lifePotionFrequency;
 
         // Adjust the desired item category if necessary.
+#ifdef RAPID_BROGUE
+       if ((rogue.foodSpawned + foodTable[RATION].strengthRequired / 3) * 4 * FP_FACTOR
+            <= (POW_FOOD[rogue.depthLevel * 4 - 1] + (randomDepthOffset * FP_FACTOR)) * foodTable[RATION].strengthRequired * 45/100) {
+#else
         if ((rogue.foodSpawned + foodTable[RATION].strengthRequired / 3) * 4 * FP_FACTOR
             <= (POW_FOOD[rogue.depthLevel-1] + (randomDepthOffset * FP_FACTOR)) * foodTable[RATION].strengthRequired * 45/100) {
+#endif
             // Guarantee a certain nutrition minimum of the approximate equivalent of one ration every four levels,
             // with more food on deeper levels since they generally take more turns to complete.
             theCategory = FOOD;
@@ -629,10 +646,28 @@ void populateItems(short upstairsX, short upstairsY) {
             }
         } else if (rogue.depthLevel > AMULET_LEVEL) {
             theCategory = GEM;
+#ifdef RAPID_BROGUE
+        } else if (rogue.lifePotionsSpawned * 4 + 3 < rogue.depthLevel * 4 + randomDepthOffset) {
+            theCategory = POTION;
+            theKind = POTION_LIFE;
+        //Rapid brogue also guarantees a detect magic by level 2
+        } else if (rogue.detectMagicPotionsSpawned == 0 && rogue.depthLevel == 2) {
+            theCategory = POTION;
+            theKind = POTION_DETECT_MAGIC;
+        //Rapid brogue also guarantees roughly 1 strength and 1 enchantment scroll per level
+        } else if (rogue.enchantmentScrollsSpawned * 4 < rogue.depthLevel * 4 + randomDepthOffset) {
+            theCategory = SCROLL;
+            theKind = SCROLL_ENCHANTING;
+        } else if (rogue.strengthPotionsSpawned * 4 + 3 < rogue.depthLevel * 4 + randomDepthOffset) {
+            theCategory = POTION;
+            theKind = POTION_STRENGTH;
+        }
+#else
         } else if (rogue.lifePotionsSpawned * 4 + 3 < rogue.depthLevel + randomDepthOffset) {
             theCategory = POTION;
             theKind = POTION_LIFE;
         }
+#endif
 
         // Generate the item.
         theItem = generateItem(theCategory, theKind);
@@ -658,6 +693,9 @@ void populateItems(short upstairsX, short upstairsY) {
         // Regulate the frequency of enchantment scrolls and strength/life potions.
         if ((theItem->category & SCROLL) && theItem->kind == SCROLL_ENCHANTING) {
             rogue.enchantScrollFrequency -= 50;
+#ifdef RAPID_BROGUE
+            rogue.enchantmentScrollsSpawned++;
+#endif
             if (D_MESSAGE_ITEM_GENERATION) printf("\n(?)  Depth %i: generated an enchant scroll at %i frequency", rogue.depthLevel, rogue.enchantScrollFrequency);
         } else if (theItem->category & POTION && theItem->kind == POTION_LIFE) {
             if (D_MESSAGE_ITEM_GENERATION) printf("\n(!l) Depth %i: generated a life potion at %i frequency", rogue.depthLevel, rogue.lifePotionFrequency);
@@ -666,6 +704,9 @@ void populateItems(short upstairsX, short upstairsY) {
         } else if (theItem->category & POTION && theItem->kind == POTION_STRENGTH) {
             if (D_MESSAGE_ITEM_GENERATION) printf("\n(!s) Depth %i: generated a strength potion at %i frequency", rogue.depthLevel, rogue.strengthPotionFrequency);
             rogue.strengthPotionFrequency -= 50;
+#ifdef RAPID_BROGUE
+            rogue.strengthPotionsSpawned++;
+#endif
         }
 
         // Place the item.

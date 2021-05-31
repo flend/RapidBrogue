@@ -319,6 +319,11 @@ void initializeRogue(uint64_t seed) {
     rogue.previousPoisonPercent = 0;
     rogue.foodSpawned = 0;
     rogue.lifePotionsSpawned = 0;
+#ifdef RAPID_BROGUE
+    rogue.strengthPotionsSpawned = 0;
+    rogue.enchantmentScrollsSpawned = 0;
+    rogue.detectMagicPotionsSpawned = 0;
+#endif
     rogue.gold = 0;
     rogue.goldGenerated = 0;
     rogue.disturbed = false;
