@@ -633,7 +633,7 @@ void populateItems(short upstairsX, short upstairsY) {
         // Adjust the desired item category if necessary.
 #ifdef RAPID_BROGUE
        if ((rogue.foodSpawned + foodTable[RATION].strengthRequired / 3) * 4 * FP_FACTOR
-            <= (POW_FOOD[rogue.depthLevel * 4 - 1] + (randomDepthOffset * FP_FACTOR)) * foodTable[RATION].strengthRequired * 45/100) {
+            <= (POW_FOOD[rogue.depthLevel * 2 - 1] + (randomDepthOffset * FP_FACTOR)) * foodTable[RATION].strengthRequired * 45/100) {
 #else
         if ((rogue.foodSpawned + foodTable[RATION].strengthRequired / 3) * 4 * FP_FACTOR
             <= (POW_FOOD[rogue.depthLevel-1] + (randomDepthOffset * FP_FACTOR)) * foodTable[RATION].strengthRequired * 45/100) {
@@ -706,6 +706,9 @@ void populateItems(short upstairsX, short upstairsY) {
             rogue.strengthPotionFrequency -= 50;
 #ifdef RAPID_BROGUE
             rogue.strengthPotionsSpawned++;
+        } else if (theItem->category & POTION && theItem->kind == POTION_DETECT_MAGIC) {
+            if (D_MESSAGE_ITEM_GENERATION) printf("\n(!d) Depth %i: generated a detect magic potion", rogue.depthLevel);
+            rogue.detectMagicPotionsSpawned++;
 #endif
         }
 
@@ -6817,18 +6820,33 @@ void readScroll(item *theItem) {
             confirmMessages();
             switch (theItem->category) {
                 case WEAPON:
+#ifdef RAPID_BROGUE
+                    theItem->strengthRequired = max(0, theItem->strengthRequired - 2);
+                    theItem->enchant1 += 2;
+#else
                     theItem->strengthRequired = max(0, theItem->strengthRequired - 1);
                     theItem->enchant1++;
+#endif
+
                     if (theItem->quiverNumber) {
                         theItem->quiverNumber = rand_range(1, 60000);
                     }
                     break;
                 case ARMOR:
+#ifdef RAPID_BROGUE
+                    theItem->strengthRequired = max(0, theItem->strengthRequired - 2);
+                    theItem->enchant1 += 2;
+#else
                     theItem->strengthRequired = max(0, theItem->strengthRequired - 1);
                     theItem->enchant1++;
+#endif
                     break;
                 case RING:
+#ifdef RAPID_BROGUE
+                    theItem->enchant1 += 2;
+#else
                     theItem->enchant1++;
+#endif
                     updateRingBonuses();
                     if (theItem->kind == RING_CLAIRVOYANCE) {
                         updateClairvoyance();
@@ -6836,15 +6854,28 @@ void readScroll(item *theItem) {
                     }
                     break;
                 case STAFF:
+#ifdef RAPID_BROGUE           
+                    theItem->enchant1 += 2;
+                    theItem->charges += 2;           
+#else
                     theItem->enchant1++;
                     theItem->charges++;
+#endif
                     theItem->enchant2 = 500 / theItem->enchant1;
                     break;
                 case WAND:
+#ifdef RAPID_BROGUE
+                    theItem->charges += 2 * wandTable[theItem->kind].range.lowerBound;
+#else
                     theItem->charges += wandTable[theItem->kind].range.lowerBound;
+#endif
                     break;
                 case CHARM:
+#ifdef RAPID_BROGUE
+                    theItem->enchant1 += 2;
+#else
                     theItem->enchant1++;
+#endif
                     theItem->charges = min(0, theItem->charges); // Enchanting instantly recharges charms.
                                                                  //                    theItem->charges = theItem->charges
                                                                  //                    * charmRechargeDelay(theItem->kind, theItem->enchant1)
@@ -6854,7 +6885,11 @@ void readScroll(item *theItem) {
                 default:
                     break;
             }
+#ifdef RAPID_BROGUE
+            theItem->timesEnchanted += 2;
+#else
             theItem->timesEnchanted++;
+#endif
             if ((theItem->category & (WEAPON | ARMOR | STAFF | RING | CHARM))
                 && theItem->enchant1 >= 16) {
 

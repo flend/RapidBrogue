@@ -170,7 +170,7 @@ typedef long long fixpt;
 #endif
 
 #ifdef RAPID_BROGUE
-#define MACHINES_FACTOR         4   // use this to adjust machine frequency
+#define MACHINES_FACTOR         3   // use this to adjust machine frequency
 #else
 #define MACHINES_FACTOR         1   // use this to adjust machine frequency
 #endif
