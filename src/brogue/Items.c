@@ -519,7 +519,7 @@ void populateItems(short upstairsX, short upstairsY) {
 
     if (rogue.depthLevel > AMULET_LEVEL) {
 #ifdef RAPID_BROGUE
-        const short lumenstoneDistribution[4] = {6, 6, 6, 6};
+        const short lumenstoneDistribution[4] = {7, 6, 6, 6};
         numberOfItems = lumenstoneDistribution[rogue.depthLevel - AMULET_LEVEL - 1];
 #else
         if (rogue.depthLevel - AMULET_LEVEL - 1 >= 8) {
