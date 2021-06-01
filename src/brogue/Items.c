@@ -632,8 +632,9 @@ void populateItems(short upstairsX, short upstairsY) {
 
         // Adjust the desired item category if necessary.
 #ifdef RAPID_BROGUE
+        //Now the same as vanilla, may be not generous enough for levels > 6
        if ((rogue.foodSpawned + foodTable[RATION].strengthRequired / 3) * 4 * FP_FACTOR
-            <= (POW_FOOD[rogue.depthLevel * 2 - 1] + (randomDepthOffset * FP_FACTOR)) * foodTable[RATION].strengthRequired * 45/100) {
+            <= (POW_FOOD[rogue.depthLevel - 1] + (randomDepthOffset * FP_FACTOR)) * foodTable[RATION].strengthRequired * 45/100) {
 #else
         if ((rogue.foodSpawned + foodTable[RATION].strengthRequired / 3) * 4 * FP_FACTOR
             <= (POW_FOOD[rogue.depthLevel-1] + (randomDepthOffset * FP_FACTOR)) * foodTable[RATION].strengthRequired * 45/100) {
