@@ -5,20 +5,20 @@ DATADIR := .
 TERMINAL := NO
 
 # Include graphical support. Requires SDL2 and SDL2_image
-GRAPHICS := YES
+GRAPHICS := NO
 # Path to sdl2-config script
 SDL_CONFIG := sdl2-config
 
 # Select web brogue mode. Requires POSIX system.
-WEBBROGUE := NO
+WEBBROGUE := YES
 
 RAPIDBROGUE := YES
 
 # Enable debugging mode. See top of Rogue.h for features
-DEBUG := YES
+DEBUG := NO
 
 # Declare this is a release build
-RELEASE := NO
+RELEASE := YES
 
 # Configure the executable to run from a macOS .app bundle (only works in graphical mode)
 MAC_APP := NO
