@@ -314,7 +314,11 @@ item *makeItemInto(item *theItem, unsigned long itemCategory, short itemKind) {
         case GOLD:
             theEntry = NULL;
             theItem->displayChar = G_GOLD;
+#ifdef RAPID_BROGUE
+            theItem->quantity = rand_range(50 + rogue.depthLevel * 40, 100 + rogue.depthLevel * 60);
+#else
             theItem->quantity = rand_range(50 + rogue.depthLevel * 10, 100 + rogue.depthLevel * 15);
+#endif
             break;
         case AMULET:
             theEntry = NULL;
@@ -543,7 +547,11 @@ void populateItems(short upstairsX, short upstairsY) {
         numberOfItems += 4; // 4 extra items in rapid brogue, accounting for extra guaranteed potions and scrolls. We also bias weights to consumables (since there are so many vaults)
 #endif
 
+#ifdef RAPID_BROGUE
+        numberOfGoldPiles = min(5, rogue.depthLevel);
+#else
         numberOfGoldPiles = min(5, rogue.depthLevel / 4);
+#endif
         for (goldBonusProbability = 60;
              rand_percent(goldBonusProbability) && numberOfGoldPiles <= 10;
              goldBonusProbability -= 15) {
@@ -552,6 +560,15 @@ void populateItems(short upstairsX, short upstairsY) {
         }
         // Adjust the amount of gold if we're past depth 5 and we were below or above
         // the production schedule as of the previous depth.
+#ifdef RAPID_BROGUE
+        if (rogue.depthLevel > 2) {
+            if (rogue.goldGenerated < aggregateGoldLowerBound(rogue.depthLevel * 4 - 1)) {
+                numberOfGoldPiles += 2;
+            } else if (rogue.goldGenerated > aggregateGoldUpperBound(rogue.depthLevel * 4 - 1)) {
+                numberOfGoldPiles -= 2;
+            }
+        }
+#else
         if (rogue.depthLevel > 5) {
             if (rogue.goldGenerated < aggregateGoldLowerBound(rogue.depthLevel - 1)) {
                 numberOfGoldPiles += 2;
@@ -559,6 +576,7 @@ void populateItems(short upstairsX, short upstairsY) {
                 numberOfGoldPiles -= 2;
             }
         }
+#endif
     }
 
     // Create an item spawn heat map to bias item generation behind secret doors (and, to a lesser
