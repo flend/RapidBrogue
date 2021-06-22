@@ -340,10 +340,15 @@ static void web_notifyEvent(short eventId, int data1, int data2, const char *str
     flushOutputBuffer();
 }
 
-static boolean web_setGraphicsEnabled(boolean state) {
-    showGraphics = state;
-    notifyEvent(SWITCH_TO_GRAPHICS, state, 0, "", "");
-    return state;
+static enum graphicsModes web_setGraphicsEnabled(enum graphicsModes mode) {
+    if(mode != TEXT_GRAPHICS) {
+        showGraphics = false;
+    }
+    else {
+        showGraphics = true;
+    }
+    notifyEvent(SWITCH_TO_GRAPHICS, showGraphics, 0, "", "");
+    return mode;
 }
 
 struct brogueConsole webConsole = {
