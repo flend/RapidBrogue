@@ -342,10 +342,10 @@ static void web_notifyEvent(short eventId, int data1, int data2, const char *str
 
 static enum graphicsModes web_setGraphicsEnabled(enum graphicsModes mode) {
     if(mode != TEXT_GRAPHICS) {
-        showGraphics = false;
+        showGraphics = true;
     }
     else {
-        showGraphics = true;
+        showGraphics = false;
     }
     notifyEvent(SWITCH_TO_GRAPHICS, showGraphics, 0, "", "");
     return mode;
