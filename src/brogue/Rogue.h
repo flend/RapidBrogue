@@ -344,7 +344,8 @@ enum notificationEventTypes {
 	GAMEOVER_DEATH,
 	GAMEOVER_VICTORY,
 	GAMEOVER_SUPERVICTORY,
-	GAMEOVER_RECORDING
+	GAMEOVER_RECORDING,
+	SWITCH_TO_GRAPHICS
 };
 
 typedef struct rogueEvent {
@@ -1145,6 +1146,7 @@ enum tileFlags {
 #define SWAP_KEY            'w'
 #define TRUE_COLORS_KEY     '\\'
 #define AGGRO_DISPLAY_KEY   ']'
+#define WARNING_PAUSE_KEY   '['
 #define DROP_KEY            'd'
 #define CALL_KEY            'c'
 #define QUIT_KEY            'Q'
@@ -2277,6 +2279,7 @@ typedef struct playerCharacter {
     boolean eligibleToUseStairs;        // so the player uses stairs only when he steps onto them
     boolean trueColorMode;              // whether lighting effects are disabled
     boolean displayAggroRangeMode;      // whether your stealth range is displayed
+    boolean warningPauseMode;           // whether the game requires a keypress to continue in low health / high poison situations
     boolean quit;                       // to skip the typical end-game theatrics when the player quits
     uint64_t seed;                      // the master seed for generating the entire dungeon
     short RNG;                          // which RNG are we currently using?
