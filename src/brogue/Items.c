@@ -7062,7 +7062,7 @@ void drinkPotion(item *theItem) {
             messageWithColor(buf, &advancementMessageColor, 0);
             break;
         case POTION_HALLUCINATION:
-            player.status[STATUS_HALLUCINATING] = player.maxStatus[STATUS_HALLUCINATING] = 300;
+            player.status[STATUS_HALLUCINATING] = player.maxStatus[STATUS_HALLUCINATING] = POTION_HALLUCINATION_DURATION;
             message("colors are everywhere! The walls are singing!", 0);
             break;
         case POTION_INCINERATION:
@@ -7072,8 +7072,8 @@ void drinkPotion(item *theItem) {
             exposeCreatureToFire(&player);
             break;
         case POTION_DARKNESS:
-            player.status[STATUS_DARKNESS] = max(400, player.status[STATUS_DARKNESS]);
-            player.maxStatus[STATUS_DARKNESS] = max(400, player.maxStatus[STATUS_DARKNESS]);
+            player.status[STATUS_DARKNESS] = max(POTION_DARKNESS_DURATION, player.status[STATUS_DARKNESS]);
+            player.maxStatus[STATUS_DARKNESS] = max(POTION_DARKNESS_DURATION, player.maxStatus[STATUS_DARKNESS]);
             updateMinersLightRadius();
             updateVision(true);
             message("your vision flickers as a cloak of darkness settles around you!", 0);
@@ -7104,10 +7104,10 @@ void drinkPotion(item *theItem) {
             message("your muscles stiffen as a cloud of pink gas bursts from the open flask!", 0);
             break;
         case POTION_TELEPATHY:
-            makePlayerTelepathic(300);
+            makePlayerTelepathic(POTION_TELEPATHY_DURATION);
             break;
         case POTION_LEVITATION:
-            player.status[STATUS_LEVITATING] = player.maxStatus[STATUS_LEVITATING] = 100;
+            player.status[STATUS_LEVITATING] = player.maxStatus[STATUS_LEVITATING] = POTION_LEVITATION_DURATION;
             player.bookkeepingFlags &= ~MB_SEIZED; // break free of holding monsters
             message("you float into the air!", 0);
             break;
@@ -7165,17 +7165,17 @@ void drinkPotion(item *theItem) {
             }
             break;
         case POTION_HASTE_SELF:
-            haste(&player, 25);
+            haste(&player, POTION_HASTE_SELF_DURATION);
             break;
         case POTION_FIRE_IMMUNITY:
-            player.status[STATUS_IMMUNE_TO_FIRE] = player.maxStatus[STATUS_IMMUNE_TO_FIRE] = 150;
+            player.status[STATUS_IMMUNE_TO_FIRE] = player.maxStatus[STATUS_IMMUNE_TO_FIRE] = POTION_FIRE_IMMUNITY_DURATION;
             if (player.status[STATUS_BURNING]) {
                 extinguishFireOnCreature(&player);
             }
             message("a comforting breeze envelops you, and you no longer fear fire.", 0);
             break;
         case POTION_INVISIBILITY:
-            player.status[STATUS_INVISIBLE] = player.maxStatus[STATUS_INVISIBLE] = 75;
+            player.status[STATUS_INVISIBLE] = player.maxStatus[STATUS_INVISIBLE] = POTION_INVISIBILITY_DURATION;
             message("you shiver as a chill runs up your spine.", 0);
             break;
         default:
