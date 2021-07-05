@@ -7087,7 +7087,7 @@ void drinkPotion(item *theItem) {
             }
             break;
         case POTION_STRENGTH:
-            rogue.strength++;
+            rogue.strength += 2;
             if (player.status[STATUS_WEAKENED]) {
                 player.status[STATUS_WEAKENED] = 1;
             }
