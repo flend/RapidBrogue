@@ -69,8 +69,8 @@ strings, but they are equal (rogue.patchLevel is set to 0).
 // Macro to compare BROGUE_MAJOR.BROGUE_MINOR.patchVersion to a.b.c
 #ifdef RAPID_BROGUE
 #define BROGUE_CE_MAJOR 1
-#define BROGUE_CE_MINOR 9
-#define BROGUE_CE_PATCH 4
+#define BROGUE_CE_MINOR 10
+#define BROGUE_CE_PATCH 0
 
 #define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_CE_MAJOR != (a) ? BROGUE_CE_MAJOR > (a) : BROGUE_CE_MINOR != (b) ? BROGUE_CE_MINOR > (b) : BROGUE_CE_PATCH >= (c))
 #else
@@ -1930,7 +1930,7 @@ enum terrainMechanicalFlagCatalog {
     TM_INTERRUPT_EXPLORATION_WHEN_SEEN = Fl(23),    // will generate a message when discovered during exploration to interrupt exploration
     TM_INVERT_WHEN_HIGHLIGHTED      = Fl(24),       // will flip fore and back colors when highlighted with pathing
     TM_SWAP_ENCHANTS_ACTIVATION     = Fl(25),       // in machine, swap item enchantments when two suitable items are on this terrain, and activate the machine when that happens
-    
+
     TM_PROMOTES_ON_STEP             = (TM_PROMOTES_ON_CREATURE | TM_PROMOTES_ON_ITEM),
 };
 

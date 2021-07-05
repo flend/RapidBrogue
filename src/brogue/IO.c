@@ -2204,7 +2204,7 @@ void funkyFade(cellDisplayBuffer displayBuf[COLS][ROWS], const color *colorStart
 
                 foreColor = (invert ? white : black);
 
-                if (j < MESSAGE_LINES
+                if (j == (MESSAGE_LINES - 1)
                     && i >= mapToWindowX(0)
                     && i < mapToWindowX(strLenWithoutEscapes(displayedMessage[MESSAGE_LINES - j - 1]))) {
                     tempChar = displayedMessage[MESSAGE_LINES - j - 1][windowToMapX(i)];
@@ -2673,7 +2673,7 @@ void executeKeystroke(signed long keystroke, boolean controlKey, boolean shiftKe
             if (rogue.playbackMode || serverMode) {
                 return;
             }
-            if (confirm("Suspend this game? (This feature is still in beta.)", false)) {
+            if (confirm("Suspend this game?", false)) {
                 saveGame();
             }
             break;
@@ -3024,7 +3024,7 @@ void displayMonsterFlashes(boolean flashingEnabled) {
     //assureCosmeticRNG;
 
     boolean handledPlayer = false;
-    for (creatureIterator it = iterateCreatures(&monsters); !handledPlayer || hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); !handledPlayer || hasNextCreature(it);) {
         creature *monst = !handledPlayer ? &player : nextCreature(&it);
         handledPlayer = true;
         if (monst->bookkeepingFlags & MB_WILL_FLASH) {
@@ -3821,7 +3821,7 @@ void refreshSideBar(short focusX, short focusY, boolean focusedEntityMustGoFirst
         // Non-focused monsters.
         do {
             shortestDistance = 10000;
-            for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+            for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
                 creature *monst = nextCreature(&it);
                 if ((canDirectlySeeMonster(monst) || (indirectVision && (canSeeMonster(monst) || rogue.playbackOmniscience)))
                     && !addedEntity[monst->xLoc][monst->yLoc]

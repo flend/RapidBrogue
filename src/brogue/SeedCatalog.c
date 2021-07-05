@@ -70,7 +70,7 @@ static void printSeedCatalogItem(item *theItem, creature *theMonster, boolean is
 
     if (theMonster != NULL) {   //carried by monster
         if (isCsvFormat) {
-            sprintf(carriedByMonsterName, theMonster->info.monsterName);
+            sprintf(carriedByMonsterName, "%s", theMonster->info.monsterName);
             strcpy(mutationName, theMonster->mutationIndex >= 0 ? mutationCatalog[theMonster->mutationIndex].title : "");
         } else {
             getMonsterDetailedName(theMonster, carriedByMonsterName);
@@ -141,14 +141,14 @@ static void printSeedCatalogMonster(creature *theMonster, boolean isCsvFormat) {
 }
 
 static void printSeedCatalogMonsters(boolean isCsvFormat, boolean includeAll) {
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *theMonster = nextCreature(&it);
         if (theMonster->bookkeepingFlags & MB_CAPTIVE || theMonster->creatureState == MONSTER_ALLY || includeAll) {
             printSeedCatalogMonster(theMonster, isCsvFormat);
         }
     }
 
-    for (creatureIterator it = iterateCreatures(&dormantMonsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(dormantMonsters); hasNextCreature(it);) {
         creature *theMonster = nextCreature(&it);
         if (theMonster->bookkeepingFlags & MB_CAPTIVE || theMonster->creatureState == MONSTER_ALLY || includeAll) {
             printSeedCatalogMonster(theMonster, isCsvFormat);
@@ -157,14 +157,14 @@ static void printSeedCatalogMonsters(boolean isCsvFormat, boolean includeAll) {
 }
 
 static void printSeedCatalogMonsterItems(boolean isCsvFormat) {
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *theMonster = nextCreature(&it);
         if (theMonster->carriedItem != NULL && theMonster->carriedItem->category != GOLD) {
             printSeedCatalogItem(theMonster->carriedItem, theMonster, isCsvFormat);
         }
     }
 
-    for (creatureIterator it = iterateCreatures(&dormantMonsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(dormantMonsters); hasNextCreature(it);) {
         creature *theMonster = nextCreature(&it);
         if (theMonster->carriedItem != NULL && theMonster->carriedItem->category != GOLD) {
             printSeedCatalogItem(theMonster->carriedItem, theMonster, isCsvFormat);

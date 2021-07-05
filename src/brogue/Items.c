@@ -872,7 +872,7 @@ void pickUpItemAt(short x, short y) {
         if ((theItem->category & AMULET)
             && !(rogue.yendorWarden)) {
             // Identify the amulet guardian, or generate one if there isn't one.
-            for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+            for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
                 creature *monst = nextCreature(&it);
                 if (monst->info.monsterID == MK_WARDEN_OF_YENDOR) {
                     rogue.yendorWarden = monst;
@@ -3332,7 +3332,7 @@ void aggravateMonsters(short distance, short x, short y, const color *flashColor
     fillGrid(grid, 0);
     calculateDistances(grid, x, y, T_PATHING_BLOCKER, NULL, true, false);
 
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *monst = nextCreature(&it);
         if (grid[monst->xLoc][monst->yLoc] <= distance) {
             if (monst->creatureState == MONSTER_SLEEPING) {
@@ -3446,11 +3446,13 @@ short getLineCoordinates(short listOfCoordinates[][2], const short originLoc[2],
             boolean burningThrough = (theBolt->flags & BF_FIERY) && cellHasTerrainFlag(x, y, T_IS_FLAMMABLE);
             boolean isCastByPlayer = (originLoc[0] == player.xLoc && originLoc[1] == player.yLoc);
 
+            creature *caster = monsterAtLoc(originLoc[0], originLoc[1]);
             creature *monst = monsterAtLoc(x, y);
             boolean isMonster = monst
                 && !(monst->bookkeepingFlags & MB_SUBMERGED)
-                && !monsterIsHidden(monst, monsterAtLoc(originLoc[0], originLoc[1]));
-            boolean isAllyOfCaster = ((monst && monst->creatureState == MONSTER_ALLY) == isCastByPlayer);
+                && !monsterIsHidden(monst, caster);
+            boolean isEnemyOfCaster = (monst && caster && monstersAreEnemies(monst, caster));
+            boolean isAllyOfCaster = (monst && caster && monstersAreTeammates(monst, caster));
 
             // small bonus for making it this far
             score += 2;
@@ -3459,7 +3461,7 @@ short getLineCoordinates(short listOfCoordinates[][2], const short originLoc[2],
             if (x == targetLoc[0] && y == targetLoc[1]) {
 
                 if ((!targetsEnemies && !targetsAllies) ||
-                    (targetsEnemies && isMonster && !isAllyOfCaster) ||
+                    (targetsEnemies && isMonster && isEnemyOfCaster) ||
                     (targetsAllies && isMonster && isAllyOfCaster)) {
 
                     // big bonus for hitting the target
@@ -3485,7 +3487,7 @@ short getLineCoordinates(short listOfCoordinates[][2], const short originLoc[2],
 
             // hitting a creature with a bolt meant for enemies
             if (isMonster && targetsEnemies) {
-                score += !isAllyOfCaster ? 50 : -200;
+                score += isEnemyOfCaster ? 50 : -200;
             }
 
             // hitting a creature with a bolt meant for allies
@@ -3754,8 +3756,7 @@ boolean negate(creature *monst) {
             negated = true;
         }
 
-        if (monst != &player && monst->mutationIndex > -1 && mutationCatalog[monst->mutationIndex].canBeNegated
-            && BROGUE_VERSION_ATLEAST(1,9,3)) {
+        if (monst != &player && monst->mutationIndex > -1 && mutationCatalog[monst->mutationIndex].canBeNegated) {
 
             monst->mutationIndex = -1;
             negated = true;
@@ -3963,11 +3964,11 @@ void heal(creature *monst, short percent, boolean panacea) {
 
 void makePlayerTelepathic(short duration) {
     player.status[STATUS_TELEPATHIC] = player.maxStatus[STATUS_TELEPATHIC] = duration;
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *monst = nextCreature(&it);
         refreshDungeonCell(monst->xLoc, monst->yLoc);
     }
-    if (!hasNextCreature(iterateCreatures(&monsters))) {
+    if (!hasNextCreature(iterateCreatures(monsters))) {
         message("you can somehow tell that you are alone on this depth at the moment.", 0);
     } else {
         message("you can somehow feel the presence of other creatures' minds!", 0);
@@ -4067,7 +4068,7 @@ void negationBlast(const char *emitterName, const short distance) {
     colorFlash(&pink, 0, IN_FIELD_OF_VIEW, 3 + distance / 5, distance, player.xLoc, player.yLoc);
     negate(&player);
     flashMonster(&player, &pink, 100);
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *monst = nextCreature(&it);
         if ((pmap[monst->xLoc][monst->yLoc].flags & IN_FIELD_OF_VIEW)
             && (player.xLoc - monst->xLoc) * (player.xLoc - monst->xLoc) + (player.yLoc - monst->yLoc) * (player.yLoc - monst->yLoc) <= distance * distance) {
@@ -4120,7 +4121,7 @@ void discordBlast(const char *emitterName, const short distance) {
     sprintf(buf, "%s emits a wave of unsettling purple radiation!", emitterName);
     messageWithColor(buf, &itemMessageColor, 0);
     colorFlash(&discordColor, 0, IN_FIELD_OF_VIEW, 3 + distance / 5, distance, player.xLoc, player.yLoc);
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *monst = nextCreature(&it);
         if ((pmap[monst->xLoc][monst->yLoc].flags & IN_FIELD_OF_VIEW)
             && (player.xLoc - monst->xLoc) * (player.xLoc - monst->xLoc) + (player.yLoc - monst->yLoc) * (player.yLoc - monst->yLoc) <= distance * distance) {
@@ -4529,7 +4530,7 @@ boolean updateBolt(bolt *theBolt, creature *caster, short x, short y,
                 if (boltCatalog[BOLT_NEGATION].backColor) {
                     flashMonster(monst, boltCatalog[BOLT_NEGATION].backColor, 100);
                 }
-                if (BROGUE_VERSION_ATLEAST(1,9,4) && negated && autoID && canSeeMonster(monst)) {
+                if (negated && autoID && canSeeMonster(monst)) {
                     *autoID = true;
                 }
 
@@ -4601,13 +4602,8 @@ boolean updateBolt(bolt *theBolt, creature *caster, short x, short y,
                 if (!(monst->info.flags & (MONST_INANIMATE | MONST_INVULNERABLE))) {
                     newMonst = cloneMonster(monst, true, true);
                     if (newMonst) {
-                        if (BROGUE_VERSION_ATLEAST(1,9,1)) {
-                            monst->info.maxHP = newMonst->info.maxHP = (monst->info.maxHP + 1) / 2;
-                            monst->currentHP = newMonst->currentHP = min(monst->currentHP, monst->info.maxHP);
-                        } else {
-                            newMonst->currentHP = newMonst->info.maxHP = (newMonst->currentHP + 1) / 2;
-                            monst->currentHP = monst->info.maxHP = (monst->currentHP + 1) / 2;
-                        }
+                        monst->info.maxHP = newMonst->info.maxHP = (monst->info.maxHP + 1) / 2;
+                        monst->currentHP = newMonst->currentHP = min(monst->currentHP, monst->info.maxHP);
                         if (boltCatalog[BOLT_PLENTY].backColor) {
                             flashMonster(monst, boltCatalog[BOLT_PLENTY].backColor, 100);
                             flashMonster(newMonst, boltCatalog[BOLT_PLENTY].backColor, 100);
@@ -4769,9 +4765,7 @@ void detonateBolt(bolt *theBolt, creature *caster, short x, short y, boolean *au
             caster->xLoc = x;
             caster->yLoc = y;
             // Always break free on blink
-            if (BROGUE_VERSION_ATLEAST(1,9,4)) {
-                disentangle(caster);
-            }
+            disentangle(caster);
             applyInstantTileEffectsToCreature(caster);
             if (caster == &player) {
                 // increase scent turn number so monsters don't sniff around at the old cell like idiots
@@ -4825,7 +4819,7 @@ boolean zap(short originLoc[2], short targetLoc[2], bolt *theBolt, boolean hideD
     y = originLoc[1];
 
     initialBoltLength = boltLength = 5 * theBolt->magnitude;
-    numCells = getLineCoordinates(listOfCoordinates, originLoc, targetLoc, (hideDetails ? NULL : theBolt));
+    numCells = getLineCoordinates(listOfCoordinates, originLoc, targetLoc, (hideDetails ? &boltCatalog[BOLT_NONE] : theBolt));
     shootingMonst = monsterAtLoc(originLoc[0], originLoc[1]);
 
     if (hideDetails) {
@@ -6334,7 +6328,7 @@ boolean useStaffOrWand(item *theItem, boolean *commandsRecorded) {
     originLoc[0] = player.xLoc;
     originLoc[1] = player.yLoc;
     confirmedTarget = chooseTarget(zapTarget, maxDistance, false, autoTarget,
-        targetAllies, (boltKnown ? &theBolt : NULL), &trajectoryHiliteColor);
+        targetAllies, (boltKnown ? &theBolt : &boltCatalog[BOLT_NONE]), &trajectoryHiliteColor);
     if (confirmedTarget
         && boltKnown
         && theBolt.boltEffect == BE_BLINKING
@@ -7138,7 +7132,7 @@ void drinkPotion(item *theItem) {
                     }
                 }
             }
-            for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+            for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
                 creature *monst = nextCreature(&it);
                 if (monst->carriedItem && (monst->carriedItem->category & CAN_BE_DETECTED)) {
                     detectMagicOnItem(monst->carriedItem);
