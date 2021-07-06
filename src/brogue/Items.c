@@ -6833,33 +6833,19 @@ void readScroll(item *theItem) {
             confirmMessages();
             switch (theItem->category) {
                 case WEAPON:
-#ifdef RAPID_BROGUE
-                    theItem->strengthRequired = max(0, theItem->strengthRequired - 2);
-                    theItem->enchant1 += 2;
-#else
-                    theItem->strengthRequired = max(0, theItem->strengthRequired - 1);
-                    theItem->enchant1++;
-#endif
+                    theItem->strengthRequired = max(0, theItem->strengthRequired - SCROLL_ENCHANTING_POWER);
+                    theItem->enchant1 += SCROLL_ENCHANTING_POWER;
 
                     if (theItem->quiverNumber) {
                         theItem->quiverNumber = rand_range(1, 60000);
                     }
                     break;
                 case ARMOR:
-#ifdef RAPID_BROGUE
-                    theItem->strengthRequired = max(0, theItem->strengthRequired - 2);
-                    theItem->enchant1 += 2;
-#else
-                    theItem->strengthRequired = max(0, theItem->strengthRequired - 1);
-                    theItem->enchant1++;
-#endif
+                    theItem->strengthRequired = max(0, theItem->strengthRequired - SCROLL_ENCHANTING_POWER);
+                    theItem->enchant1 += SCROLL_ENCHANTING_POWER;
                     break;
                 case RING:
-#ifdef RAPID_BROGUE
-                    theItem->enchant1 += 2;
-#else
-                    theItem->enchant1++;
-#endif
+                    theItem->enchant1 += SCROLL_ENCHANTING_POWER;
                     updateRingBonuses();
                     if (theItem->kind == RING_CLAIRVOYANCE) {
                         updateClairvoyance();
@@ -6867,28 +6853,15 @@ void readScroll(item *theItem) {
                     }
                     break;
                 case STAFF:
-#ifdef RAPID_BROGUE           
-                    theItem->enchant1 += 2;
-                    theItem->charges += 2;           
-#else
-                    theItem->enchant1++;
-                    theItem->charges++;
-#endif
+                    theItem->enchant1 += SCROLL_ENCHANTING_POWER;
+                    theItem->charges += SCROLL_ENCHANTING_POWER;
                     theItem->enchant2 = 500 / theItem->enchant1;
                     break;
                 case WAND:
-#ifdef RAPID_BROGUE
-                    theItem->charges += 2 * wandTable[theItem->kind].range.lowerBound;
-#else
-                    theItem->charges += wandTable[theItem->kind].range.lowerBound;
-#endif
+                    theItem->charges += SCROLL_ENCHANTING_POWER * wandTable[theItem->kind].range.lowerBound;
                     break;
                 case CHARM:
-#ifdef RAPID_BROGUE
-                    theItem->enchant1 += 2;
-#else
-                    theItem->enchant1++;
-#endif
+                    theItem->enchant1 += SCROLL_ENCHANTING_POWER;
                     theItem->charges = min(0, theItem->charges); // Enchanting instantly recharges charms.
                                                                  //                    theItem->charges = theItem->charges
                                                                  //                    * charmRechargeDelay(theItem->kind, theItem->enchant1)
@@ -6898,11 +6871,7 @@ void readScroll(item *theItem) {
                 default:
                     break;
             }
-#ifdef RAPID_BROGUE
-            theItem->timesEnchanted += 2;
-#else
-            theItem->timesEnchanted++;
-#endif
+            theItem->timesEnchanted += SCROLL_ENCHANTING_POWER;
             if ((theItem->category & (WEAPON | ARMOR | STAFF | RING | CHARM))
                 && theItem->enchant1 >= 16) {
 
@@ -7087,7 +7056,7 @@ void drinkPotion(item *theItem) {
             }
             break;
         case POTION_STRENGTH:
-            rogue.strength += 2;
+            rogue.strength += POTION_STRENGTH_POWER;
             if (player.status[STATUS_WEAKENED]) {
                 player.status[STATUS_WEAKENED] = 1;
             }
