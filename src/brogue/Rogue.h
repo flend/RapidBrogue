@@ -235,6 +235,14 @@ typedef long long fixpt;
 #define BOLT_INVISIBILITY_DURATION 150
 #endif
 
+#ifdef RAPID_BROGUE
+#define SCROLL_ENCHANTING_POWER 2
+#define POTION_STRENGTH_POWER 2
+#else
+#define SCROLL_ENCHANTING_POWER 1
+#define POTION_STRENGTH_POWER 1
+#endif
+
 #define FALL_DAMAGE_MIN         8
 #define FALL_DAMAGE_MAX         10
 
