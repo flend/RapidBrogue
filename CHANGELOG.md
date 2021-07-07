@@ -5,21 +5,21 @@ RAPID BROGUE CHANGES
 =====
 
 -
-Upgraded to Brogue CE 1.10 release (+ 64bit seed load OOS fix)
+  Upgraded to Brogue CE 1.10 release (+ 64bit seed load OOS fix)
 -
-Reduced charges for wands, especially very powerful wands - polymorph and teleportation (roughly 2x)
+  Reduced charges for wands, especially very powerful wands - polymorph and teleportation (roughly 2x)
 -
-Updated item mouseover descriptions with correct outcomes for enchantment (since enchants are 2x in RB)
+  Updated item mouseover descriptions with correct outcomes for enchantment (since enchants are 2x in RB)
 -
-Reduced monster weakness duration (2x)
+  Reduced monster weakness duration (2x)
 -
-Reduced wand invisibility duration (2x)
+  Reduced wand invisibility duration (2x)
 -
-Reduce potion durations, especially invisibility and telepathy (up to 6x)
+  Reduce potion durations, especially invisibility and telepathy (up to 6x)
 -
-Doubled the effectiveness of strength potions
+  Doubled the effectiveness of strength potions
 -
-RAPID addition to menu screen
+  RAPID addition to menu screen
 
 BROGUE-CE CHANGES
 =================
