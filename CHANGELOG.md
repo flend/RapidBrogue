@@ -11,7 +11,7 @@ Reduced charges for wands, especially very powerful wands - polymorph and telepo
 -
 Updated item mouseover descriptions with correct outcomes for enchantment (since enchants are 2x in RB)
 -
-Reduced monster weakness duration (4x)
+Reduced monster weakness duration (2x)
 -
 Reduced wand invisibility duration (2x)
 -
