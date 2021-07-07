@@ -5,7 +5,7 @@ RAPID BROGUE CHANGES
 =====
 
 -
-Upgraded to Brogue CE 1.10 release
+Upgraded to Brogue CE 1.10 release (+ 64bit seed load OOS fix)
 -
 Reduced charges for wands, especially very powerful wands - polymorph and teleportation (roughly 2x)
 -
