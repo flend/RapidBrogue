@@ -3095,6 +3095,19 @@ itemTable potionTable[NUMBER_POTION_KINDS] = {
     {"creeping death",      itemColors[16], "", 7,  450,    0,{0,0,0}, false, false, "When the cork is popped or the flask is thrown, tiny spores will spill across the ground and begin to grow a deadly lichen. Anything that touches the lichen will be poisoned by its clinging tendrils, and the lichen will slowly grow to fill the area. Fire will purge the infestation."},
 };
 
+#ifdef RAPID_BROGUE
+itemTable wandTable[NUMBER_WAND_KINDS] = {
+    {"teleportation",   itemMetals[0], "",  3,  800,    BOLT_TELEPORT,      {1,2,1}, false, false, "This wand will teleport a creature to a random place on the level. Aquatic or mud-bound creatures will be rendered helpless on dry land."},
+    {"slowness",        itemMetals[1], "",  3,  800,    BOLT_SLOW,          {2,4,1}, false, false, "This wand will cause a creature to move at half its ordinary speed for 30 turns."},
+    {"polymorphism",    itemMetals[2], "",  3,  700,    BOLT_POLYMORPH,     {1,2,1}, false, false, "This mischievous magic will transform a creature into another creature at random. Beware: the tamest of creatures might turn into the most fearsome. The horror of the transformation will turn an allied victim against you."},
+    {"negation",        itemMetals[3], "",  3,  550,    BOLT_NEGATION,      {2,4,1}, false, false, "This powerful anti-magic will strip a creature of a host of magical traits, including flight, invisibility, acidic corrosiveness, telepathy, magical speed or slowness, hypnosis, magical fear, immunity to physical attack, fire resistance and the ability to blink. Spellcasters will lose their magical abilities and magical totems will be rendered inert. Creatures animated purely by magic will die."},
+    {"domination",      itemMetals[4], "",  1,  1000,   BOLT_DOMINATION,    {1,2,1}, false, false, "This wand can forever bind an enemy to the caster's will, turning it into a steadfast ally. However, the magic only works effectively against enemies that are near death."},
+    {"beckoning",       itemMetals[5], "",  3,  500,    BOLT_BECKONING,     {2,4,1}, false, false, "The force of this wand will draw the targeted creature into direct proximity."},
+    {"plenty",          itemMetals[6], "",  2,  700,    BOLT_PLENTY,        {1,2,1}, false, false, "The creature at the other end of this wand, friend or foe, will be beside itself -- literally! This mischievous cloning magic splits the body and life essence of its target into two. Both the creature and its clone will be weaker than the original."},
+    {"invisibility",    itemMetals[7], "",  3,  100,    BOLT_INVISIBILITY,  {2,4,1}, false, false, "This wand will render a creature temporarily invisible to the naked eye. Only with telepathy or in the silhouette of a thick gas will an observer discern the creature's hazy outline."},
+    {"empowerment",     itemMetals[8], "",  2,  100,    BOLT_EMPOWERMENT,   {1,1,1}, false, false, "This sacred magic will permanently improve the mind and body of any monster it hits. A wise adventurer will use it on allies, making them stronger in combat and able to learn a new talent from a fallen foe. If the bolt is reflected back at you, it will have no effect."},
+};
+#else
 itemTable wandTable[NUMBER_WAND_KINDS] = {
     {"teleportation",   itemMetals[0], "",  3,  800,    BOLT_TELEPORT,      {3,5,1}, false, false, "This wand will teleport a creature to a random place on the level. Aquatic or mud-bound creatures will be rendered helpless on dry land."},
     {"slowness",        itemMetals[1], "",  3,  800,    BOLT_SLOW,          {2,5,1}, false, false, "This wand will cause a creature to move at half its ordinary speed for 30 turns."},
@@ -3106,7 +3119,7 @@ itemTable wandTable[NUMBER_WAND_KINDS] = {
     {"invisibility",    itemMetals[7], "",  3,  100,    BOLT_INVISIBILITY,  {3,5,1}, false, false, "This wand will render a creature temporarily invisible to the naked eye. Only with telepathy or in the silhouette of a thick gas will an observer discern the creature's hazy outline."},
     {"empowerment",     itemMetals[8], "",  2,  100,    BOLT_EMPOWERMENT,   {1,1,1}, false, false, "This sacred magic will permanently improve the mind and body of any monster it hits. A wise adventurer will use it on allies, making them stronger in combat and able to learn a new talent from a fallen foe. If the bolt is reflected back at you, it will have no effect."},
 };
-
+#endif
 itemTable staffTable[NUMBER_STAFF_KINDS] = {
     {"lightning",       itemWoods[0], "",   15, 1300,   BOLT_LIGHTNING,     {2,4,1}, false, false, "This staff conjures forth deadly arcs of electricity to damage to any number of creatures in a straight line."},
     {"firebolt",        itemWoods[1], "",   15, 1300,   BOLT_FIRE,          {2,4,1}, false, false, "This staff unleashes bursts of magical fire. It will ignite flammable terrain and burn any creature that it hits. Creatures with an immunity to fire will be unaffected by the bolt."},
