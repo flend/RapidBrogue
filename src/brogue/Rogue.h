@@ -178,6 +178,8 @@ typedef long long fixpt;
 #define AMULET_LEVEL            6          // how deep before the amulet appears
 #define DEEPEST_LEVEL           10         // how deep the universe goes
 
+#define DEPTH_ACCELERATOR 4 //How quickly depth-dependent features scale as compared to the usual 26/40 levels
+
 #define MINIMUM_LAVA_LEVEL 2
 #define MINIMUM_BRIMSTONE_LEVEL 5
 
@@ -209,6 +211,8 @@ typedef long long fixpt;
 
 #define AMULET_LEVEL            26          // how deep before the amulet appears
 #define DEEPEST_LEVEL           40          // how deep the universe goes
+
+#define DEPTH_ACCELERATOR 1 //How quickly depth-dependent features scale as compared to the usual 26/40 levels
 
 #define MINIMUM_LAVA_LEVEL 4
 #define MINIMUM_BRIMSTONE_LEVEL 17

@@ -755,7 +755,11 @@ void startLevel(short oldLevelNumber, short stairDirection) {
         if (rogue.depthLevel == AMULET_LEVEL) {
             messageWithColor("An alien energy permeates the area. The Amulet of Yendor must be nearby!", &itemMessageColor, 0);
         } else if (rogue.depthLevel == DEEPEST_LEVEL) {
+#ifdef RAPID_BROGUE
+            messageWithColor("An overwhelming sense of peace and tranquility settles upon you... then you see monsters. Doh.", &lightBlue, 0);
+#else
             messageWithColor("An overwhelming sense of peace and tranquility settles upon you.", &lightBlue, 0);
+#endif
         }
     }
 
