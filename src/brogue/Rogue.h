@@ -171,40 +171,28 @@ typedef long long fixpt;
 
 #define VISIBILITY_THRESHOLD    50          // how bright cumulative light has to be before the cell is marked visible
 
-#ifdef RAPID_BROGUE
-#define AMULET_LEVEL            6          // how deep before the amulet appears
-#define DEEPEST_LEVEL           10          // how deep the universe goes
-#else
-#define AMULET_LEVEL            26          // how deep before the amulet appears
-#define DEEPEST_LEVEL           40          // how deep the universe goes
-#endif
-
-#ifdef RAPID_BROGUE
-#define MACHINES_FACTOR         3   // use this to adjust machine frequency
-#else
-#define MACHINES_FACTOR         1   // use this to adjust machine frequency
-#endif
-
 #define MACHINES_BUFFER_LENGTH  200
 
 #ifdef RAPID_BROGUE
+
+#define AMULET_LEVEL            6          // how deep before the amulet appears
+#define DEEPEST_LEVEL           10         // how deep the universe goes
+
 #define MINIMUM_LAVA_LEVEL 2
 #define MINIMUM_BRIMSTONE_LEVEL 5
-#else
-#define MINIMUM_LAVA_LEVEL 4
-#define MINIMUM_BRIMSTONE_LEVEL 17
-#endif
 
-#ifdef RAPID_BROGUE
 #define BRIDGE_LEVEL_RATIO 2
-#else
-#define BRIDGE_LEVEL_RATIO 9
-#endif
 
-#ifdef RAPID_BROGUE
+#define MACHINES_FACTOR 3
+
+#define MINERS_LIGHT_LEVEL_DECREASE_RATE 4
+
 #define WEAPON_KILLS_TO_AUTO_ID 5
 #define ARMOR_DELAY_TO_AUTO_ID  250
 #define RING_DELAY_TO_AUTO_ID   250
+
+#define SCROLL_ENCHANTING_POWER 2
+#define POTION_STRENGTH_POWER 2
 
 #define POTION_DARKNESS_DURATION 75
 #define POTION_FIRE_IMMUNITY_DURATION 75
@@ -217,12 +205,26 @@ typedef long long fixpt;
 #define MONSTER_WEAKNESS_DURATION 150
 
 #define BOLT_INVISIBILITY_DURATION 75
-
-#define MINERS_LIGHT_LEVEL_DECREASE_RATE 4
 #else
+
+#define AMULET_LEVEL            26          // how deep before the amulet appears
+#define DEEPEST_LEVEL           40          // how deep the universe goes
+
+#define MINIMUM_LAVA_LEVEL 4
+#define MINIMUM_BRIMSTONE_LEVEL 17
+
+#define BRIDGE_LEVEL_RATIO 9
+
+#define MACHINES_FACTOR 1
+
+#define MINERS_LIGHT_LEVEL_DECREASE_RATE 1
+
 #define WEAPON_KILLS_TO_AUTO_ID 20
 #define ARMOR_DELAY_TO_AUTO_ID  1000
 #define RING_DELAY_TO_AUTO_ID   1500
+
+#define SCROLL_ENCHANTING_POWER 1
+#define POTION_STRENGTH_POWER 1
 
 #define POTION_DARKNESS_DURATION 400
 #define POTION_FIRE_IMMUNITY_DURATION 150
@@ -235,19 +237,9 @@ typedef long long fixpt;
 #define MONSTER_WEAKNESS_DURATION 300
 
 #define BOLT_INVISIBILITY_DURATION 150
-
-#define MINERS_LIGHT_LEVEL_DECREASE_RATE 1
 #endif
 
 #define MONSTER_HALLUCINATE_DURATION 20
-
-#ifdef RAPID_BROGUE
-#define SCROLL_ENCHANTING_POWER 2
-#define POTION_STRENGTH_POWER 2
-#else
-#define SCROLL_ENCHANTING_POWER 1
-#define POTION_STRENGTH_POWER 1
-#endif
 
 #define FALL_DAMAGE_MIN         8
 #define FALL_DAMAGE_MAX         10
