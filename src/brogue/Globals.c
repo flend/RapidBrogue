@@ -367,6 +367,69 @@ const color *dynamicColors[NUMBER_DYNAMIC_COLORS][3] = {
     {&chasmEdgeBackColor,   &chasmEdgeBackColorStart,   &chasmEdgeBackColorEnd},
 };
 
+#ifdef RAPID_BROGUE
+const autoGenerator autoGeneratorCatalog[NUMBER_AUTOGENERATORS] = {
+//   terrain                    layer   DF                          Machine                     reqDungeon  reqLiquid   >=Depth <=Depth          freq    minIncp minSlope    maxNumber
+    // Ordinary features of the dungeon
+    {0,                         0,      DF_GRANITE_COLUMN,          0,                          FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  60,     100,    0,          4},
+    {0,                         0,      DF_CRYSTAL_WALL,            0,                          WALL,       NOTHING,    4,      DEEPEST_LEVEL,  15,     -300,   100,         5},
+    {0,                         0,      DF_LUMINESCENT_FUNGUS,      0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  15,     -560,   280,         14},
+    {0,                         0,      DF_GRASS,                   0,                          FLOOR,      NOTHING,    0,      4,              0,      1000,   -320,        10},
+    {0,                         0,      DF_DEAD_GRASS,              0,                          FLOOR,      NOTHING,    4,      3,              0,      -200,   80,         10},
+    {0,                         0,      DF_DEAD_GRASS,              0,                          FLOOR,      NOTHING,    3,      4,              0,      1600,   -320,        10},
+    {0,                         0,      DF_BONES,                   0,                          FLOOR,      NOTHING,    4,      DEEPEST_LEVEL-1,30,     0,      0,          4},
+    {0,                         0,      DF_RUBBLE,                  0,                          FLOOR,      NOTHING,    0,      DEEPEST_LEVEL-1,30,     0,      0,          4},
+    {0,                         0,      DF_FOLIAGE,                 0,                          FLOOR,      NOTHING,    0,      3,              15,     1000,   -250,       10},
+    {0,                         0,      DF_FUNGUS_FOREST,           0,                          FLOOR,      NOTHING,    4,      DEEPEST_LEVEL,  30,     -600,   200,         12},
+    {0,                         0,      DF_BUILD_ALGAE_WELL,        0,                          FLOOR,      DEEP_WATER, 4,      DEEPEST_LEVEL,  50,     0,      0,          2},
+    {STATUE_INERT,              DUNGEON,0,                          0,                          WALL,       NOTHING,    2,      DEEPEST_LEVEL-1,5,      -100,   140,         3},
+    {STATUE_INERT,              DUNGEON,0,                          0,                          FLOOR,      NOTHING,    4,      DEEPEST_LEVEL-1,50,     0,      0,          3},
+    {TORCH_WALL,                DUNGEON,0,                          0,                          WALL,       NOTHING,    2,      DEEPEST_LEVEL-1,5,      -200,   280,         12},
+
+    // Pre-revealed traps
+    {GAS_TRAP_POISON,           DUNGEON,0,                          0,                          FLOOR,      NOTHING,    1,      2,              20,     0,      0,          1},
+    {NET_TRAP,                  DUNGEON,0,                          0,                          FLOOR,      NOTHING,    1,      2,              20,     0,      0,          1},
+    {0,                         0,      0,                          MT_PARALYSIS_TRAP_AREA,     FLOOR,      NOTHING,    1,      2,              20,     0,      0,          1},
+    {ALARM_TRAP,                DUNGEON,0,                          0,                          FLOOR,      NOTHING,    2,      3,              20,     0,      0,          1},
+    {GAS_TRAP_CONFUSION,        DUNGEON,0,                          0,                          FLOOR,      NOTHING,    1,      3,              20,     0,      0,          1},
+    {FLAMETHROWER,              DUNGEON,0,                          0,                          FLOOR,      NOTHING,    2,      4,              20,     0,      0,          1},
+    {FLOOD_TRAP,                DUNGEON,0,                          0,                          FLOOR,      NOTHING,    4,      4,              20,     0,      0,          1},
+
+    // Hidden traps
+    {GAS_TRAP_POISON_HIDDEN,    DUNGEON,0,                          0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  20,     100,    0,          3},
+    {NET_TRAP_HIDDEN,           DUNGEON,0,                          0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  20,     100,    0,          3},
+    {0,                         0,      0,                          MT_PARALYSIS_TRAP_HIDDEN_AREA, FLOOR,   NOTHING,    3,      DEEPEST_LEVEL,  20,     100,    0,          3},
+    {ALARM_TRAP_HIDDEN,         DUNGEON,0,                          0,                          FLOOR,      NOTHING,    4,      DEEPEST_LEVEL,  20,     100,    0,          2},
+    {TRAP_DOOR_HIDDEN,          DUNGEON,0,                          0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  20,     100,    0,          2},
+    {GAS_TRAP_CONFUSION_HIDDEN, DUNGEON,0,                          0,                          FLOOR,      NOTHING,    4,      DEEPEST_LEVEL,  20,     100,    0,          3},
+    {FLAMETHROWER_HIDDEN,       DUNGEON,0,                          0,                          FLOOR,      NOTHING,    5,      DEEPEST_LEVEL,  20,     100,    0,          3},
+    {FLOOD_TRAP_HIDDEN,         DUNGEON,0,                          0,                          FLOOR,      NOTHING,    5,      DEEPEST_LEVEL,  20,     100,    0,          3},
+    {0,                         0,      0,                          MT_SWAMP_AREA,              FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  30,     0,      0,          2},
+    {0,                         0,      DF_SUNLIGHT,                0,                          FLOOR,      NOTHING,    0,      2,              15,     500,    -200,       10},
+    {0,                         0,      DF_DARKNESS,                0,                          FLOOR,      NOTHING,    1,      5,              15,     600,    -100,        10},
+    {STEAM_VENT,                DUNGEON,0,                          0,                          FLOOR,      NOTHING,    5,      DEEPEST_LEVEL,  30,     100,    0,          3},
+    {CRYSTAL_WALL,              DUNGEON,0,                          0,                          WALL,       NOTHING,    DEEPEST_LEVEL,DEEPEST_LEVEL,100,0,      0,          600},
+
+    // Dewars
+    {DEWAR_CAUSTIC_GAS,         DUNGEON,DF_CARPET_AREA,             0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  2,      0,      0,          2},
+    {DEWAR_CONFUSION_GAS,       DUNGEON,DF_CARPET_AREA,             0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  2,      0,      0,          2},
+    {DEWAR_PARALYSIS_GAS,       DUNGEON,DF_CARPET_AREA,             0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  2,      0,      0,          2},
+    {DEWAR_METHANE_GAS,         DUNGEON,DF_CARPET_AREA,             0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  2,      0,      0,          2},
+
+    // Flavor machines
+    {0,                         0,      DF_LUMINESCENT_FUNGUS,      0,                          FLOOR,      NOTHING,    DEEPEST_LEVEL,DEEPEST_LEVEL,100,0,      0,          200},
+    {0,                         0,      0,                          MT_BLOODFLOWER_AREA,        FLOOR,      NOTHING,    1,      7,              25,     160,    -20,        3},
+    {0,                         0,      0,                          MT_SHRINE_AREA,             FLOOR,      NOTHING,    2,      AMULET_LEVEL,   7,      0,      0,          1},
+    {0,                         0,      0,                          MT_IDYLL_AREA,              FLOOR,      NOTHING,    1,      2,              15,     0,      0,          1},
+    {0,                         0,      0,                          MT_REMNANT_AREA,            FLOOR,      NOTHING,    4,      DEEPEST_LEVEL,  15,     0,      0,          2},
+    {0,                         0,      0,                          MT_DISMAL_AREA,             FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  12,     0,      0,          5},
+    {0,                         0,      0,                          MT_BRIDGE_TURRET_AREA,      FLOOR,      NOTHING,    2,      DEEPEST_LEVEL,  6,      0,      0,          2},
+    {0,                         0,      0,                          MT_LAKE_PATH_TURRET_AREA,   FLOOR,      NOTHING,    2,      DEEPEST_LEVEL,  6,      0,      0,          2},
+    {0,                         0,      0,                          MT_TRICK_STATUE_AREA,       FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  15,     0,      0,          3},
+    {0,                         0,      0,                          MT_SENTINEL_AREA,           FLOOR,      NOTHING,    4,      DEEPEST_LEVEL,  10,     0,      0,          2},
+    {0,                         0,      0,                          MT_WORM_AREA,               FLOOR,      NOTHING,    4,      DEEPEST_LEVEL,  12,     0,      0,          3},
+};
+#else
 const autoGenerator autoGeneratorCatalog[NUMBER_AUTOGENERATORS] = {
 //   terrain                    layer   DF                          Machine                     reqDungeon  reqLiquid   >Depth  <Depth          freq    minIncp minSlope    maxNumber
     // Ordinary features of the dungeon
@@ -428,6 +491,7 @@ const autoGenerator autoGeneratorCatalog[NUMBER_AUTOGENERATORS] = {
     {0,                         0,      0,                          MT_SENTINEL_AREA,           FLOOR,      NOTHING,    12,     DEEPEST_LEVEL-1,10,     0,      0,          2},
     {0,                         0,      0,                          MT_WORM_AREA,               FLOOR,      NOTHING,    12,     DEEPEST_LEVEL-1,12,     0,      0,          3},
 };
+#endif
 
 const floorTileType tileCatalog[NUMBER_TILETYPES] = {
 
