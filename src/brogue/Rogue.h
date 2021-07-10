@@ -207,6 +207,8 @@ typedef long long fixpt;
 #define MONSTER_WEAKNESS_DURATION 150
 
 #define BOLT_INVISIBILITY_DURATION 75
+
+#define MUTATIONS_OCCUR_ABOVE_LEVEL 3
 #else
 
 #define AMULET_LEVEL            26          // how deep before the amulet appears
@@ -241,6 +243,8 @@ typedef long long fixpt;
 #define MONSTER_WEAKNESS_DURATION 300
 
 #define BOLT_INVISIBILITY_DURATION 150
+
+#define MUTATIONS_OCCUR_ABOVE_LEVEL 10
 #endif
 
 #define MONSTER_HALLUCINATE_DURATION 20
