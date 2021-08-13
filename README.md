@@ -1,3 +1,17 @@
+Rapid Brogue
+============
+
+RapidBrogue is a brogue variant that compresses the game into 10 levels.
+The amulet is on level 6 and a mastery is achieved by escaping from level 10.
+
+The game attempts to fit roughly the same amount of content as a full game of
+BrogueCE into the shortened length. Spawn depths have been adjusted to give
+a rapid, but fair, difficulty curve. There are more vaults and key magic items
+(strength and enchants) are double strength. There are also some gameplay
+changes to befit a faster game.
+
+Otherwise the variant is very close to BrogueCE.
+
 Brogue CE
 =========
 
