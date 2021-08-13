@@ -5,6 +5,8 @@ RAPID BROGUE CHANGES
 =====
 
 -
+  Upgraded to Brogue CE 1.10.1 release
+-
   Traps and other dungeon features now scale correctly with RapidBrogue level (so occur earlier)
 -
   Light levels now scale correctly with RapidBrogue level (so it gets darker faster)
@@ -41,6 +43,15 @@ RAPID BROGUE CHANGES
 
 BROGUE-CE CHANGES
 =================
+1.10.1
+======
+
+-
+  Fixed an out-of-sync error when loading a game with a 64-bit seed.
+-
+  (For distributors) Added an experimental `--data-dir` option for specifying
+  the location of game resources.
+
 
 1.10
 ====

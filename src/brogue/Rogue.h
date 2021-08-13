@@ -37,7 +37,7 @@
 
 // Brogue version number
 #define BROGUE_MAJOR 1
-#define BROGUE_MINOR 1
+#define BROGUE_MINOR 2
 #define BROGUE_PATCH 0
 
 // Expanding a macro as a string constant requires two levels of macros
@@ -64,13 +64,13 @@ strings, but they are equal (rogue.patchLevel is set to 0).
 #define BROGUE_PATCH_VERSION_PATTERN "RB " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) ".%hu"
 
 // Dungeon version. Used in seed catalog output.
-#define BROGUE_DUNGEON_VERSION_STRING "RB 1.0.0"
+#define BROGUE_DUNGEON_VERSION_STRING "RB 1.2.0"
 
 // Macro to compare BROGUE_MAJOR.BROGUE_MINOR.patchVersion to a.b.c
 #ifdef RAPID_BROGUE
 #define BROGUE_CE_MAJOR 1
 #define BROGUE_CE_MINOR 10
-#define BROGUE_CE_PATCH 0
+#define BROGUE_CE_PATCH 1
 
 #define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_CE_MAJOR != (a) ? BROGUE_CE_MAJOR > (a) : BROGUE_CE_MINOR != (b) ? BROGUE_CE_MINOR > (b) : BROGUE_CE_PATCH >= (c))
 #else
@@ -2680,9 +2680,6 @@ typedef struct feat {
 #define PDS_OBSTRUCTION -2
 #define PDS_CELL(map, x, y) ((map)->links + ((x) + DCOLS * (y)))
 
-typedef struct pdsLink pdsLink;
-typedef struct pdsMap pdsMap;
-
 typedef struct brogueButton {
     char text[COLS*3];          // button label; can include color escapes
     short x;                    // button's leftmost cell will be drawn at (x, y)
@@ -3384,9 +3381,6 @@ extern "C" {
                           rogueEvent *returnEvent);
 
     void dijkstraScan(short **distanceMap, short **costMap, boolean useDiagonals);
-    void pdsClear(pdsMap *map, short maxDistance, boolean eightWays);
-    void pdsSetDistance(pdsMap *map, short x, short y, short distance);
-    void pdsBatchOutput(pdsMap *map, short **distanceMap);
 
 #if defined __cplusplus
 }
