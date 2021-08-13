@@ -47,7 +47,7 @@ static int wfd, rfd;
 static FILE *logfile;
 static unsigned char outputBuffer[OUTPUT_BUFFER_SIZE];
 static int outputBufferPos = 0;
-static boolean showGraphics = false;
+static enum graphicsModes showGraphics = TEXT_GRAPHICS;
 static boolean platformSetup = false;
 
 static void setupPlatform();
@@ -267,7 +267,7 @@ static void web_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInput, 
 
     if (returnEvent->eventType == QUERY_GRAPHICS) {
         // Custom event type - not a command for the brogue game
-        notifyEvent(SWITCH_TO_GRAPHICS, showGraphics, 0, "", "");
+        notifyEvent(SWITCH_TO_GRAPHICS, (int)showGraphics, 0, "", "");
         return;
     }
 
@@ -340,10 +340,10 @@ static void web_notifyEvent(short eventId, int data1, int data2, const char *str
     flushOutputBuffer();
 }
 
-static boolean web_setGraphicsEnabled(boolean state) {
-    showGraphics = state;
-    notifyEvent(SWITCH_TO_GRAPHICS, state, 0, "", "");
-    return state;
+static enum graphicsModes web_setGraphicsEnabled(enum graphicsModes mode) {
+    showGraphics = mode;
+    notifyEvent(SWITCH_TO_GRAPHICS, showGraphics, 0, "", "");
+    return mode;
 }
 
 struct brogueConsole webConsole = {
