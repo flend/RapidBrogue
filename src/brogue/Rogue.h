@@ -209,6 +209,8 @@ typedef long long fixpt;
 #define BOLT_INVISIBILITY_DURATION 75
 
 #define MUTATIONS_OCCUR_ABOVE_LEVEL 3
+
+#define TRANSFERENCE_RATIO 1 / 10
 #else
 
 #define AMULET_LEVEL            26          // how deep before the amulet appears
@@ -245,6 +247,8 @@ typedef long long fixpt;
 #define BOLT_INVISIBILITY_DURATION 150
 
 #define MUTATIONS_OCCUR_ABOVE_LEVEL 10
+
+#define TRANSFERENCE_RATIO 1 / 20
 #endif
 
 #define MONSTER_HALLUCINATE_DURATION 20
