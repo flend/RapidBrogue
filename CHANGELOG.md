@@ -1,6 +1,22 @@
 RAPID BROGUE CHANGES
 ====================
 
+1.2.0
+=====
+
+-
+  Traps and other dungeon features now scale correctly with RapidBrogue level (so occur earlier)
+-
+  Light levels now scale correctly with RapidBrogue level (so it gets darker faster)
+-
+  Mutated creatures appear from level 4 onwards
+-
+  Centipede poison reduced to 2/3 v1.1.0 duration
+-
+  Transference increased in power by 2x (1/10th of damage dealt)
+-
+  Teleport charms never take less than 2 turns to recharge at any enchant
+
 1.1.0
 =====
 
