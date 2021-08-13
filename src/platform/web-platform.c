@@ -96,7 +96,7 @@ static void closeLogfile() {
 }
 
 static void writeToLog(const char *msg) {
-    fprintf(logfile, msg);
+    fprintf(logfile, "%s", msg);
     fflush(logfile);
 }
 
