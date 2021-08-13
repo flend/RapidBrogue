@@ -13,15 +13,15 @@
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>Brogue CE</string>
+    <string>RapidBrogue</string>
     <key>CFBundleDisplayName</key>
-    <string>Brogue CE</string>
+    <string>RapidBrogue</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleVersion</key>
-    <string>1.9.4</string>
+    <string>1.2.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.9.4</string>
+    <string>1.2.0</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleSupportedPlatforms</key>

@@ -65,19 +65,16 @@ unsigned char compressKeystroke(long c) {
     return UNKNOWN_KEY;
 }
 
-void numberToString(unsigned long number, short numberOfBytes, unsigned char *recordTo) {
+void numberToString(uint64_t number, short numberOfBytes, unsigned char *recordTo) {
     short i;
-    unsigned long n;
+    uint64_t n;
 
     n = number;
     for (i=numberOfBytes - 1; i >= 0; i--) {
         recordTo[i] = n % 256;
         n /= 256;
     }
-    if (n > 0) {
-        printf("\nError: the number %li does not fit in %i bytes.", number, numberOfBytes);
-        brogueAssert(false);
-    }
+    brogueAssert(n == 0);
 }
 
 // numberOfBytes can't be greater than 10
@@ -280,22 +277,22 @@ long uncompressKeystroke(unsigned char c) {
     return (long)c;
 }
 
-unsigned long recallNumber(short numberOfBytes) {
+uint64_t recallNumber(short numberOfBytes) {
     short i;
-    unsigned long n;
+    uint64_t n;
 
     n = 0;
 
     for (i=0; i<numberOfBytes; i++) {
         n *= 256;
-        n += (unsigned long) recallChar();
+        n += (uint64_t) recallChar();
     }
     return n;
 }
 
 #define OOS_APOLOGY "Playback of the recording has diverged from the originally recorded game.\n\n\
 This could be caused by recording or playing the file on a modified version of Brogue, or it could \
-simply be the result of a bug.  (The recording feature is still in beta for this reason.)\n\n\
+simply be the result of a bug.\n\n\
 If this is a different computer from the one on which the recording was saved, the recording \
 might succeed on the original computer."
 
@@ -514,7 +511,7 @@ void initRecording() {
             rogue.gameHasEnded = true;
         }
 
-        if (wizardMode != rogue.wizard && BROGUE_VERSION_ATLEAST(1,9,2)) {
+        if (wizardMode != rogue.wizard) {
             // wizard game cannot be played in normal mode and vice versa
             rogue.playbackMode = false;
             rogue.playbackFastForward = false;

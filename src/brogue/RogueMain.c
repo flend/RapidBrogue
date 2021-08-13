@@ -279,8 +279,8 @@ void initializeRogue(uint64_t seed) {
         monsterItemsHopper->nextItem = theItem;
     }
 
-    monsters = createCreatureList();
-    dormantMonsters = createCreatureList();
+    monsters = &levels[0].monsters;
+    dormantMonsters = &levels[0].dormantMonsters;
     graveyard = createCreatureList();
     purgatory = createCreatureList();
 
@@ -543,7 +543,7 @@ void startLevel(short oldLevelNumber, short stairDirection) {
         for (flying = 0; flying <= 1; flying++) {
             fillGrid(mapToStairs, 0);
             calculateDistances(mapToStairs, px, py, (flying ? T_OBSTRUCTS_PASSABILITY : T_PATHING_BLOCKER) | T_SACRED, NULL, true, true);
-            for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+            for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
                 creature *monst = nextCreature(&it);
                 x = monst->xLoc;
                 y = monst->yLoc;
@@ -580,19 +580,13 @@ void startLevel(short oldLevelNumber, short stairDirection) {
         freeGrid(mapToStairs);
     }
 
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *monst = nextCreature(&it);
         if (monst->mapToMe) {
             freeGrid(monst->mapToMe);
             monst->mapToMe = NULL;
         }
-        if (!BROGUE_VERSION_ATLEAST(1,9,3) && monst->safetyMap) {
-            freeGrid(monst->safetyMap);
-            monst->safetyMap = NULL;
-        }
     }
-    levels[oldLevelNumber-1].monsters = monsters;
-    levels[oldLevelNumber-1].dormantMonsters = dormantMonsters;
     levels[oldLevelNumber-1].items = floorItems->nextItem;
 
     for (i=0; i<DCOLS; i++) {
@@ -624,7 +618,7 @@ void startLevel(short oldLevelNumber, short stairDirection) {
     //  Prepare the new level
     rogue.minersLightRadius = (DCOLS - 1) * FP_FACTOR;
     for (i = 0; i < rogue.depthLevel; i++) {
-        rogue.minersLightRadius = rogue.minersLightRadius * 85 / 100;
+        rogue.minersLightRadius = rogue.minersLightRadius * MINERS_LIGHT_LEVEL_DECREASE_RATE * 85 / 100;
     }
     rogue.minersLightRadius += FP_FACTOR * 225 / 100;
     updateColors();
@@ -644,12 +638,10 @@ void startLevel(short oldLevelNumber, short stairDirection) {
         seedRandomGenerator(levels[rogue.depthLevel - 1].levelSeed);
 
         // Load up next level's monsters and items, since one might have fallen from above.
-        monsters             = levels[rogue.depthLevel-1].monsters;
-        dormantMonsters      = levels[rogue.depthLevel-1].dormantMonsters;
+        monsters             = &levels[rogue.depthLevel-1].monsters;
+        dormantMonsters      = &levels[rogue.depthLevel-1].dormantMonsters;
         floorItems->nextItem = levels[rogue.depthLevel-1].items;
 
-        levels[rogue.depthLevel-1].monsters = createCreatureList();
-        levels[rogue.depthLevel-1].dormantMonsters = createCreatureList();
         levels[rogue.depthLevel-1].items = NULL;
 
         digDungeon();
@@ -670,7 +662,7 @@ void startLevel(short oldLevelNumber, short stairDirection) {
                     break;
                 }
             }
-            for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+            for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
                 creature *monst = nextCreature(&it);
                 if (monst->carriedItem
                     && (monst->carriedItem->category & AMULET)) {
@@ -725,12 +717,10 @@ void startLevel(short oldLevelNumber, short stairDirection) {
         rogue.upLoc[0]      = levels[rogue.depthLevel - 1].upStairsLoc[0];
         rogue.upLoc[1]      = levels[rogue.depthLevel - 1].upStairsLoc[1];
 
-        monsters             = levels[rogue.depthLevel - 1].monsters;
-        dormantMonsters      = levels[rogue.depthLevel - 1].dormantMonsters;
+        monsters             = &levels[rogue.depthLevel - 1].monsters;
+        dormantMonsters      = &levels[rogue.depthLevel - 1].dormantMonsters;
         floorItems->nextItem = levels[rogue.depthLevel - 1].items;
 
-        levels[rogue.depthLevel-1].monsters        = createCreatureList();
-        levels[rogue.depthLevel-1].dormantMonsters = createCreatureList();
         levels[rogue.depthLevel-1].items           = NULL;
 
         for (theItem = floorItems->nextItem; theItem != NULL; theItem = theItem->nextItem) {
@@ -766,7 +756,11 @@ void startLevel(short oldLevelNumber, short stairDirection) {
         if (rogue.depthLevel == AMULET_LEVEL) {
             messageWithColor("An alien energy permeates the area. The Amulet of Yendor must be nearby!", &itemMessageColor, 0);
         } else if (rogue.depthLevel == DEEPEST_LEVEL) {
+#ifdef RAPID_BROGUE
+            messageWithColor("An overwhelming sense of peace and tranquility settles upon you... then you see monsters. Doh.", &lightBlue, 0);
+#else
             messageWithColor("An overwhelming sense of peace and tranquility settles upon you.", &lightBlue, 0);
+#endif
         }
     }
 
@@ -846,7 +840,7 @@ void startLevel(short oldLevelNumber, short stairDirection) {
         calculateDistances(mapToStairs, player.xLoc, player.yLoc, T_PATHING_BLOCKER, NULL, true, true);
         calculateDistances(mapToPit, levels[rogue.depthLevel-1].playerExitedVia[0],
                            levels[rogue.depthLevel-1].playerExitedVia[1], T_PATHING_BLOCKER, NULL, true, true);
-        for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+        for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
             creature *monst = nextCreature(&it);
             restoreMonster(monst, mapToStairs, mapToPit);
         }
@@ -859,7 +853,7 @@ void startLevel(short oldLevelNumber, short stairDirection) {
     rogue.aggroRange = currentAggroValue();
 
     // update monster states so none are hunting if there is no scent and they can't see the player
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *monst = nextCreature(&it);
         updateMonsterState(monst);
     }
@@ -919,7 +913,7 @@ void freeEverything() {
     for (i=0; i<DEEPEST_LEVEL+1; i++) {
         freeCreatureList(&levels[i].monsters);
         freeCreatureList(&levels[i].dormantMonsters);
-        
+
         for (theItem = levels[i].items; theItem != NULL; theItem = theItem2) {
             theItem2 = theItem->nextItem;
             deleteItem(theItem);
@@ -931,11 +925,9 @@ void freeEverything() {
         }
     }
     scentMap = NULL;
-    freeCreatureList(&monsters);
-    freeCreatureList(&dormantMonsters);
     freeCreatureList(&graveyard);
     freeCreatureList(&purgatory);
-    
+
     for (theItem = floorItems; theItem != NULL; theItem = theItem2) {
         theItem2 = theItem->nextItem;
         deleteItem(theItem);
@@ -1147,7 +1139,6 @@ void victory(boolean superVictory) {
     //
     // First screen - Congratulations...
     //
-    deleteMessages();
     if (superVictory) {
         message(    "Light streams through the portal, and you are teleported out of the dungeon.", 0);
         copyDisplayBuffer(dbuf, displayBuffer);

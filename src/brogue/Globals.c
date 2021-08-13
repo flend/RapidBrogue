@@ -37,8 +37,8 @@ short numberOfWaypoints;
 levelData *levels;
 creature player;
 playerCharacter rogue;
-creatureList monsters;
-creatureList dormantMonsters;
+creatureList *monsters;
+creatureList *dormantMonsters;
 creatureList graveyard;
 creatureList purgatory;
 item *floorItems;
@@ -367,6 +367,69 @@ const color *dynamicColors[NUMBER_DYNAMIC_COLORS][3] = {
     {&chasmEdgeBackColor,   &chasmEdgeBackColorStart,   &chasmEdgeBackColorEnd},
 };
 
+#ifdef RAPID_BROGUE
+const autoGenerator autoGeneratorCatalog[NUMBER_AUTOGENERATORS] = {
+//   terrain                    layer   DF                          Machine                     reqDungeon  reqLiquid   >=Depth <=Depth          freq    minIncp minSlope    maxNumber
+    // Ordinary features of the dungeon
+    {0,                         0,      DF_GRANITE_COLUMN,          0,                          FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  60,     100,    0,          4},
+    {0,                         0,      DF_CRYSTAL_WALL,            0,                          WALL,       NOTHING,    4,      DEEPEST_LEVEL,  15,     -300,   100,         5},
+    {0,                         0,      DF_LUMINESCENT_FUNGUS,      0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  15,     -560,   280,         14},
+    {0,                         0,      DF_GRASS,                   0,                          FLOOR,      NOTHING,    0,      4,              0,      1000,   -320,        10},
+    {0,                         0,      DF_DEAD_GRASS,              0,                          FLOOR,      NOTHING,    4,      3,              0,      -200,   80,         10},
+    {0,                         0,      DF_DEAD_GRASS,              0,                          FLOOR,      NOTHING,    3,      4,              0,      1600,   -320,        10},
+    {0,                         0,      DF_BONES,                   0,                          FLOOR,      NOTHING,    4,      DEEPEST_LEVEL-1,30,     0,      0,          4},
+    {0,                         0,      DF_RUBBLE,                  0,                          FLOOR,      NOTHING,    0,      DEEPEST_LEVEL-1,30,     0,      0,          4},
+    {0,                         0,      DF_FOLIAGE,                 0,                          FLOOR,      NOTHING,    0,      3,              15,     1000,   -250,       10},
+    {0,                         0,      DF_FUNGUS_FOREST,           0,                          FLOOR,      NOTHING,    4,      DEEPEST_LEVEL,  30,     -600,   200,         12},
+    {0,                         0,      DF_BUILD_ALGAE_WELL,        0,                          FLOOR,      DEEP_WATER, 4,      DEEPEST_LEVEL,  50,     0,      0,          2},
+    {STATUE_INERT,              DUNGEON,0,                          0,                          WALL,       NOTHING,    2,      DEEPEST_LEVEL-1,5,      -100,   140,         3},
+    {STATUE_INERT,              DUNGEON,0,                          0,                          FLOOR,      NOTHING,    4,      DEEPEST_LEVEL-1,50,     0,      0,          3},
+    {TORCH_WALL,                DUNGEON,0,                          0,                          WALL,       NOTHING,    2,      DEEPEST_LEVEL-1,5,      -200,   280,         12},
+
+    // Pre-revealed traps
+    {GAS_TRAP_POISON,           DUNGEON,0,                          0,                          FLOOR,      NOTHING,    1,      2,              20,     0,      0,          1},
+    {NET_TRAP,                  DUNGEON,0,                          0,                          FLOOR,      NOTHING,    1,      2,              20,     0,      0,          1},
+    {0,                         0,      0,                          MT_PARALYSIS_TRAP_AREA,     FLOOR,      NOTHING,    1,      2,              20,     0,      0,          1},
+    {ALARM_TRAP,                DUNGEON,0,                          0,                          FLOOR,      NOTHING,    2,      3,              20,     0,      0,          1},
+    {GAS_TRAP_CONFUSION,        DUNGEON,0,                          0,                          FLOOR,      NOTHING,    1,      3,              20,     0,      0,          1},
+    {FLAMETHROWER,              DUNGEON,0,                          0,                          FLOOR,      NOTHING,    2,      4,              20,     0,      0,          1},
+    {FLOOD_TRAP,                DUNGEON,0,                          0,                          FLOOR,      NOTHING,    4,      4,              20,     0,      0,          1},
+
+    // Hidden traps
+    {GAS_TRAP_POISON_HIDDEN,    DUNGEON,0,                          0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  20,     100,    0,          3},
+    {NET_TRAP_HIDDEN,           DUNGEON,0,                          0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  20,     100,    0,          3},
+    {0,                         0,      0,                          MT_PARALYSIS_TRAP_HIDDEN_AREA, FLOOR,   NOTHING,    3,      DEEPEST_LEVEL,  20,     100,    0,          3},
+    {ALARM_TRAP_HIDDEN,         DUNGEON,0,                          0,                          FLOOR,      NOTHING,    4,      DEEPEST_LEVEL,  20,     100,    0,          2},
+    {TRAP_DOOR_HIDDEN,          DUNGEON,0,                          0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  20,     100,    0,          2},
+    {GAS_TRAP_CONFUSION_HIDDEN, DUNGEON,0,                          0,                          FLOOR,      NOTHING,    4,      DEEPEST_LEVEL,  20,     100,    0,          3},
+    {FLAMETHROWER_HIDDEN,       DUNGEON,0,                          0,                          FLOOR,      NOTHING,    5,      DEEPEST_LEVEL,  20,     100,    0,          3},
+    {FLOOD_TRAP_HIDDEN,         DUNGEON,0,                          0,                          FLOOR,      NOTHING,    5,      DEEPEST_LEVEL,  20,     100,    0,          3},
+    {0,                         0,      0,                          MT_SWAMP_AREA,              FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  30,     0,      0,          2},
+    {0,                         0,      DF_SUNLIGHT,                0,                          FLOOR,      NOTHING,    0,      2,              15,     500,    -200,       10},
+    {0,                         0,      DF_DARKNESS,                0,                          FLOOR,      NOTHING,    1,      5,              15,     600,    -100,        10},
+    {STEAM_VENT,                DUNGEON,0,                          0,                          FLOOR,      NOTHING,    5,      DEEPEST_LEVEL,  30,     100,    0,          3},
+    {CRYSTAL_WALL,              DUNGEON,0,                          0,                          WALL,       NOTHING,    DEEPEST_LEVEL,DEEPEST_LEVEL,100,0,      0,          600},
+
+    // Dewars
+    {DEWAR_CAUSTIC_GAS,         DUNGEON,DF_CARPET_AREA,             0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  2,      0,      0,          2},
+    {DEWAR_CONFUSION_GAS,       DUNGEON,DF_CARPET_AREA,             0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  2,      0,      0,          2},
+    {DEWAR_PARALYSIS_GAS,       DUNGEON,DF_CARPET_AREA,             0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  2,      0,      0,          2},
+    {DEWAR_METHANE_GAS,         DUNGEON,DF_CARPET_AREA,             0,                          FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  2,      0,      0,          2},
+
+    // Flavor machines
+    {0,                         0,      DF_LUMINESCENT_FUNGUS,      0,                          FLOOR,      NOTHING,    DEEPEST_LEVEL,DEEPEST_LEVEL,100,0,      0,          200},
+    {0,                         0,      0,                          MT_BLOODFLOWER_AREA,        FLOOR,      NOTHING,    1,      7,              25,     160,    -20,        3},
+    {0,                         0,      0,                          MT_SHRINE_AREA,             FLOOR,      NOTHING,    2,      AMULET_LEVEL,   7,      0,      0,          1},
+    {0,                         0,      0,                          MT_IDYLL_AREA,              FLOOR,      NOTHING,    1,      2,              15,     0,      0,          1},
+    {0,                         0,      0,                          MT_REMNANT_AREA,            FLOOR,      NOTHING,    4,      DEEPEST_LEVEL,  15,     0,      0,          2},
+    {0,                         0,      0,                          MT_DISMAL_AREA,             FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  12,     0,      0,          5},
+    {0,                         0,      0,                          MT_BRIDGE_TURRET_AREA,      FLOOR,      NOTHING,    2,      DEEPEST_LEVEL,  6,      0,      0,          2},
+    {0,                         0,      0,                          MT_LAKE_PATH_TURRET_AREA,   FLOOR,      NOTHING,    2,      DEEPEST_LEVEL,  6,      0,      0,          2},
+    {0,                         0,      0,                          MT_TRICK_STATUE_AREA,       FLOOR,      NOTHING,    3,      DEEPEST_LEVEL,  15,     0,      0,          3},
+    {0,                         0,      0,                          MT_SENTINEL_AREA,           FLOOR,      NOTHING,    4,      DEEPEST_LEVEL,  10,     0,      0,          2},
+    {0,                         0,      0,                          MT_WORM_AREA,               FLOOR,      NOTHING,    4,      DEEPEST_LEVEL,  12,     0,      0,          3},
+};
+#else
 const autoGenerator autoGeneratorCatalog[NUMBER_AUTOGENERATORS] = {
 //   terrain                    layer   DF                          Machine                     reqDungeon  reqLiquid   >Depth  <Depth          freq    minIncp minSlope    maxNumber
     // Ordinary features of the dungeon
@@ -428,6 +491,7 @@ const autoGenerator autoGeneratorCatalog[NUMBER_AUTOGENERATORS] = {
     {0,                         0,      0,                          MT_SENTINEL_AREA,           FLOOR,      NOTHING,    12,     DEEPEST_LEVEL-1,10,     0,      0,          2},
     {0,                         0,      0,                          MT_WORM_AREA,               FLOOR,      NOTHING,    12,     DEEPEST_LEVEL-1,12,     0,      0,          3},
 };
+#endif
 
 const floorTileType tileCatalog[NUMBER_TILETYPES] = {
 
@@ -3095,6 +3159,19 @@ itemTable potionTable[NUMBER_POTION_KINDS] = {
     {"creeping death",      itemColors[16], "", 7,  450,    0,{0,0,0}, false, false, "When the cork is popped or the flask is thrown, tiny spores will spill across the ground and begin to grow a deadly lichen. Anything that touches the lichen will be poisoned by its clinging tendrils, and the lichen will slowly grow to fill the area. Fire will purge the infestation."},
 };
 
+#ifdef RAPID_BROGUE
+itemTable wandTable[NUMBER_WAND_KINDS] = {
+    {"teleportation",   itemMetals[0], "",  3,  800,    BOLT_TELEPORT,      {1,2,1}, false, false, "This wand will teleport a creature to a random place on the level. Aquatic or mud-bound creatures will be rendered helpless on dry land."},
+    {"slowness",        itemMetals[1], "",  3,  800,    BOLT_SLOW,          {2,4,1}, false, false, "This wand will cause a creature to move at half its ordinary speed for 30 turns."},
+    {"polymorphism",    itemMetals[2], "",  3,  700,    BOLT_POLYMORPH,     {1,2,1}, false, false, "This mischievous magic will transform a creature into another creature at random. Beware: the tamest of creatures might turn into the most fearsome. The horror of the transformation will turn an allied victim against you."},
+    {"negation",        itemMetals[3], "",  3,  550,    BOLT_NEGATION,      {2,4,1}, false, false, "This powerful anti-magic will strip a creature of a host of magical traits, including flight, invisibility, acidic corrosiveness, telepathy, magical speed or slowness, hypnosis, magical fear, immunity to physical attack, fire resistance and the ability to blink. Spellcasters will lose their magical abilities and magical totems will be rendered inert. Creatures animated purely by magic will die."},
+    {"domination",      itemMetals[4], "",  1,  1000,   BOLT_DOMINATION,    {1,2,1}, false, false, "This wand can forever bind an enemy to the caster's will, turning it into a steadfast ally. However, the magic only works effectively against enemies that are near death."},
+    {"beckoning",       itemMetals[5], "",  3,  500,    BOLT_BECKONING,     {2,4,1}, false, false, "The force of this wand will draw the targeted creature into direct proximity."},
+    {"plenty",          itemMetals[6], "",  2,  700,    BOLT_PLENTY,        {1,2,1}, false, false, "The creature at the other end of this wand, friend or foe, will be beside itself -- literally! This mischievous cloning magic splits the body and life essence of its target into two. Both the creature and its clone will be weaker than the original."},
+    {"invisibility",    itemMetals[7], "",  3,  100,    BOLT_INVISIBILITY,  {2,4,1}, false, false, "This wand will render a creature temporarily invisible to the naked eye. Only with telepathy or in the silhouette of a thick gas will an observer discern the creature's hazy outline."},
+    {"empowerment",     itemMetals[8], "",  2,  100,    BOLT_EMPOWERMENT,   {1,1,1}, false, false, "This sacred magic will permanently improve the mind and body of any monster it hits. A wise adventurer will use it on allies, making them stronger in combat and able to learn a new talent from a fallen foe. If the bolt is reflected back at you, it will have no effect."},
+};
+#else
 itemTable wandTable[NUMBER_WAND_KINDS] = {
     {"teleportation",   itemMetals[0], "",  3,  800,    BOLT_TELEPORT,      {3,5,1}, false, false, "This wand will teleport a creature to a random place on the level. Aquatic or mud-bound creatures will be rendered helpless on dry land."},
     {"slowness",        itemMetals[1], "",  3,  800,    BOLT_SLOW,          {2,5,1}, false, false, "This wand will cause a creature to move at half its ordinary speed for 30 turns."},
@@ -3106,7 +3183,7 @@ itemTable wandTable[NUMBER_WAND_KINDS] = {
     {"invisibility",    itemMetals[7], "",  3,  100,    BOLT_INVISIBILITY,  {3,5,1}, false, false, "This wand will render a creature temporarily invisible to the naked eye. Only with telepathy or in the silhouette of a thick gas will an observer discern the creature's hazy outline."},
     {"empowerment",     itemMetals[8], "",  2,  100,    BOLT_EMPOWERMENT,   {1,1,1}, false, false, "This sacred magic will permanently improve the mind and body of any monster it hits. A wise adventurer will use it on allies, making them stronger in combat and able to learn a new talent from a fallen foe. If the bolt is reflected back at you, it will have no effect."},
 };
-
+#endif
 itemTable staffTable[NUMBER_STAFF_KINDS] = {
     {"lightning",       itemWoods[0], "",   15, 1300,   BOLT_LIGHTNING,     {2,4,1}, false, false, "This staff conjures forth deadly arcs of electricity to damage to any number of creatures in a straight line."},
     {"firebolt",        itemWoods[1], "",   15, 1300,   BOLT_FIRE,          {2,4,1}, false, false, "This staff unleashes bursts of magical fire. It will ignite flammable terrain and burn any creature that it hits. Creatures with an immunity to fire will be unaffected by the bolt."},

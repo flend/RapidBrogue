@@ -36,7 +36,7 @@ static void printSeedCatalogCsvLine(uint64_t seed, short depth, short quantity, 
                                     char enchantment[50], char runicName[50], char vaultNumber[10], char opensVaultNumber[10],
                                     char carriedByMonsterName[50], char allyStatusName[20], char mutationName[100]){
 
-    printf("%s,%llu,%i,%i,%s,%s,%s,%s,%s,%s,%s,%s,%s\n", BROGUE_DUNGEON_VERSION_STRING, seed, depth, quantity, categoryName,
+    printf("%s,%llu,%i,%i,%s,%s,%s,%s,%s,%s,%s,%s,%s\n", BROGUE_DUNGEON_VERSION_STRING, (unsigned long long) seed, depth, quantity, categoryName,
            kindName, enchantment, runicName, vaultNumber, opensVaultNumber, carriedByMonsterName, allyStatusName,
            mutationName);
 }
@@ -70,7 +70,7 @@ static void printSeedCatalogItem(item *theItem, creature *theMonster, boolean is
 
     if (theMonster != NULL) {   //carried by monster
         if (isCsvFormat) {
-            sprintf(carriedByMonsterName, theMonster->info.monsterName);
+            sprintf(carriedByMonsterName, "%s", theMonster->info.monsterName);
             strcpy(mutationName, theMonster->mutationIndex >= 0 ? mutationCatalog[theMonster->mutationIndex].title : "");
         } else {
             getMonsterDetailedName(theMonster, carriedByMonsterName);
@@ -141,14 +141,14 @@ static void printSeedCatalogMonster(creature *theMonster, boolean isCsvFormat) {
 }
 
 static void printSeedCatalogMonsters(boolean isCsvFormat, boolean includeAll) {
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *theMonster = nextCreature(&it);
         if (theMonster->bookkeepingFlags & MB_CAPTIVE || theMonster->creatureState == MONSTER_ALLY || includeAll) {
             printSeedCatalogMonster(theMonster, isCsvFormat);
         }
     }
 
-    for (creatureIterator it = iterateCreatures(&dormantMonsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(dormantMonsters); hasNextCreature(it);) {
         creature *theMonster = nextCreature(&it);
         if (theMonster->bookkeepingFlags & MB_CAPTIVE || theMonster->creatureState == MONSTER_ALLY || includeAll) {
             printSeedCatalogMonster(theMonster, isCsvFormat);
@@ -157,14 +157,14 @@ static void printSeedCatalogMonsters(boolean isCsvFormat, boolean includeAll) {
 }
 
 static void printSeedCatalogMonsterItems(boolean isCsvFormat) {
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *theMonster = nextCreature(&it);
         if (theMonster->carriedItem != NULL && theMonster->carriedItem->category != GOLD) {
             printSeedCatalogItem(theMonster->carriedItem, theMonster, isCsvFormat);
         }
     }
 
-    for (creatureIterator it = iterateCreatures(&dormantMonsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(dormantMonsters); hasNextCreature(it);) {
         creature *theMonster = nextCreature(&it);
         if (theMonster->carriedItem != NULL && theMonster->carriedItem->category != GOLD) {
             printSeedCatalogItem(theMonster->carriedItem, theMonster, isCsvFormat);
@@ -264,8 +264,8 @@ void printSeedCatalog(uint64_t startingSeed, uint64_t numberOfSeedsToScan, unsig
                      "Generated with %s. Dungeons unchanged since %s.\n\n"
                      "To play one of these seeds, press control-N from the title screen"
                      " and enter the seed number.\n",
-            startingSeed, startingSeed + numberOfSeedsToScan - 1, scanThroughDepth, BROGUE_VERSION_STRING,
-            BROGUE_DUNGEON_VERSION_STRING, scanThroughDepth);
+            (unsigned long long) startingSeed, (unsigned long long) startingSeed + numberOfSeedsToScan - 1, scanThroughDepth, BROGUE_VERSION_STRING,
+            BROGUE_DUNGEON_VERSION_STRING);
 
     if (isCsvFormat) {
         fprintf(stderr, "%s", message);
@@ -276,9 +276,9 @@ void printSeedCatalog(uint64_t startingSeed, uint64_t numberOfSeedsToScan, unsig
 
     for (theSeed = startingSeed; theSeed < startingSeed + numberOfSeedsToScan; theSeed++) {
         if (!isCsvFormat) {
-            printf("Seed %llu:\n", theSeed);
+            printf("Seed %llu:\n", (unsigned long long) theSeed);
         }
-        fprintf(stderr, "Scanning seed %llu...\n", theSeed);
+        fprintf(stderr, "Scanning seed %llu...\n", (unsigned long long) theSeed);
         rogue.nextGamePath[0] = '\0';
         randomNumbersGenerated = 0;
 

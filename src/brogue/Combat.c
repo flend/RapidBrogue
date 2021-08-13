@@ -267,7 +267,7 @@ void splitMonster(creature *monst, short x, short y) {
 
 short alliedCloneCount(creature *monst) {
     short count = 0;
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *temp = nextCreature(&it);
         if (temp != monst
             && temp->info.monsterID == monst->info.monsterID
@@ -403,7 +403,7 @@ void specialHit(creature *attacker, creature *defender, short damage) {
             if (!player.status[STATUS_HALLUCINATING]) {
                 player.maxStatus[STATUS_HALLUCINATING] = 0;
             }
-            player.status[STATUS_HALLUCINATING] += 20;
+            player.status[STATUS_HALLUCINATING] += MONSTER_HALLUCINATE_DURATION;
             player.maxStatus[STATUS_HALLUCINATING] = max(player.maxStatus[STATUS_HALLUCINATING], player.status[STATUS_HALLUCINATING]);
         }
         if (attacker->info.abilityFlags & MA_HIT_BURN
@@ -476,7 +476,7 @@ void specialHit(creature *attacker, creature *defender, short damage) {
         && damage > 0
         && !(defender->info.flags & (MONST_INANIMATE | MONST_INVULNERABLE))) {
 
-        weaken(defender, 300);
+        weaken(defender, MONSTER_WEAKNESS_DURATION);
     }
     if (attacker->info.abilityFlags & MA_ATTACKS_STAGGER) {
         processStaggerHit(attacker, defender);
@@ -1054,9 +1054,8 @@ boolean attack(creature *attacker, creature *defender, boolean lungeAttack) {
 
     if ((attacker->info.abilityFlags & MA_SEIZES)
         && (!(attacker->bookkeepingFlags & MB_SEIZING) || !(defender->bookkeepingFlags & MB_SEIZED))
-        && (!BROGUE_VERSION_ATLEAST(1,9,2) ||
-            (distanceBetween(attacker->xLoc, attacker->yLoc, defender->xLoc, defender->yLoc) == 1
-            && !diagonalBlocked(attacker->xLoc, attacker->yLoc, defender->xLoc, defender->yLoc, false)))) {
+        && (distanceBetween(attacker->xLoc, attacker->yLoc, defender->xLoc, defender->yLoc) == 1
+            && !diagonalBlocked(attacker->xLoc, attacker->yLoc, defender->xLoc, defender->yLoc, false))) {
 
         attacker->bookkeepingFlags |= MB_SEIZING;
         defender->bookkeepingFlags |= MB_SEIZED;
@@ -1388,7 +1387,7 @@ boolean anyoneWantABite(creature *decedent) {
     grid = allocGrid();
     fillGrid(grid, 0);
     calculateDistances(grid, decedent->xLoc, decedent->yLoc, T_PATHING_BLOCKER, NULL, true, true);
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *ally = nextCreature(&it);
         if (canAbsorb(ally, ourBolts, decedent, grid)) {
             candidates++;
@@ -1397,7 +1396,7 @@ boolean anyoneWantABite(creature *decedent) {
     if (candidates > 0) {
         randIndex = rand_range(1, candidates);
         creature *firstAlly = NULL;
-        for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+        for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
             creature *ally = nextCreature(&it);
             // CanAbsorb() populates ourBolts if it returns true and there are no learnable behaviors or flags:
             if (canAbsorb(ally, ourBolts, decedent, grid) && !--randIndex) {
@@ -1537,7 +1536,7 @@ boolean inflictDamage(creature *attacker, creature *defender,
         transferenceAmount = min(damage, defender->currentHP); // Maximum transferred damage can't exceed the victim's remaining health.
 
         if (attacker == &player) {
-            transferenceAmount = transferenceAmount * rogue.transference / 20;
+            transferenceAmount = transferenceAmount * rogue.transference * TRANSFERENCE_RATIO;
             if (transferenceAmount == 0) {
                 transferenceAmount = ((rogue.transference > 0) ? 1 : -1);
             }
@@ -1641,7 +1640,7 @@ void killCreature(creature *decedent, boolean administrativeDeath) {
     }
 
     if (!administrativeDeath && (decedent->info.abilityFlags & MA_DF_ON_DEATH)
-        && ((!BROGUE_VERSION_ATLEAST(1,9,3)) || !(decedent->bookkeepingFlags & MB_IS_FALLING))) {
+        && !(decedent->bookkeepingFlags & MB_IS_FALLING)) {
         spawnDungeonFeature(decedent->xLoc, decedent->yLoc, &dungeonFeatureCatalog[decedent->info.DFType], true, false);
 
         if (monsterText[decedent->info.monsterID].DFMessage[0] && canSeeMonster(decedent)) {
@@ -1671,8 +1670,8 @@ void killCreature(creature *decedent, boolean administrativeDeath) {
         } else {
             pmap[x][y].flags &= ~HAS_MONSTER;
         }
-        removeCreature(&dormantMonsters, decedent);
-        removeCreature(&monsters, decedent);
+        removeCreature(dormantMonsters, decedent);
+        removeCreature(monsters, decedent);
 
         if (decedent->leader == &player
             && !(decedent->info.flags & MONST_INANIMATE)
@@ -1690,8 +1689,8 @@ void killCreature(creature *decedent, boolean administrativeDeath) {
                 // Insert it into the chain.
                 creature *carriedMonster = decedent->carriedMonster;
                 decedent->carriedMonster = NULL;
-                prependCreature(&monsters, carriedMonster);
-                
+                prependCreature(monsters, carriedMonster);
+
                 carriedMonster->xLoc = x;
                 carriedMonster->yLoc = y;
                 carriedMonster->ticksUntilTurn = 200;

@@ -264,6 +264,37 @@ short charmRechargeDelay(short charmKind, short enchant) {
         10000,  // Recharging
         2500,   // Negation
     };
+#ifdef RAPID_BROGUE
+    const short minRechargeTurns[NUMBER_CHARM_KINDS] = {
+        1,   // Health
+        1,   // Protection
+        1,   // Haste
+        1,   // Fire immunity
+        1,   // Invisibility
+        1,   // Telepathy
+        1,   // Levitation
+        1,   // Shattering
+        1,   // Guardian
+        2,   // Teleportation
+        1,   // Recharging
+        1,   // Negation
+    };
+#else
+    const short minRechargeTurns[NUMBER_CHARM_KINDS] = {
+        1,   // Health
+        1,   // Protection
+        1,   // Haste
+        1,   // Fire immunity
+        1,   // Invisibility
+        1,   // Telepathy
+        1,   // Levitation
+        1,   // Shattering
+        1,   // Guardian
+        1,   // Teleportation
+        1,   // Recharging
+        1,   // Negation
+    };
+#endif
     const fixpt base[NUMBER_CHARM_KINDS] = {
         FP_FACTOR * 55 / 100, // Health
         FP_FACTOR * 60 / 100, // Protection
@@ -282,7 +313,7 @@ short charmRechargeDelay(short charmKind, short enchant) {
     enchant = clamp(enchant, 1, 50);
     short delay = charmEffectDuration(charmKind, enchant)
         + (duration[charmKind] * fp_pow(base[charmKind], enchant) / FP_FACTOR);
-    return max(1, delay);
+    return max(minRechargeTurns[charmKind], delay);
 }
 
 short runicWeaponChance(item *theItem, boolean customEnchantLevel, fixpt enchantLevel) {

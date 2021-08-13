@@ -37,7 +37,7 @@
 
 // Brogue version number
 #define BROGUE_MAJOR 1
-#define BROGUE_MINOR 0
+#define BROGUE_MINOR 2
 #define BROGUE_PATCH 0
 
 // Expanding a macro as a string constant requires two levels of macros
@@ -64,13 +64,13 @@ strings, but they are equal (rogue.patchLevel is set to 0).
 #define BROGUE_PATCH_VERSION_PATTERN "RB " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) ".%hu"
 
 // Dungeon version. Used in seed catalog output.
-#define BROGUE_DUNGEON_VERSION_STRING "RB 1.0.0"
+#define BROGUE_DUNGEON_VERSION_STRING "RB 1.2.0"
 
 // Macro to compare BROGUE_MAJOR.BROGUE_MINOR.patchVersion to a.b.c
 #ifdef RAPID_BROGUE
 #define BROGUE_CE_MAJOR 1
-#define BROGUE_CE_MINOR 9
-#define BROGUE_CE_PATCH 4
+#define BROGUE_CE_MINOR 10
+#define BROGUE_CE_PATCH 1
 
 #define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_CE_MAJOR != (a) ? BROGUE_CE_MAJOR > (a) : BROGUE_CE_MINOR != (b) ? BROGUE_CE_MINOR > (b) : BROGUE_CE_PATCH >= (c))
 #else
@@ -171,39 +171,87 @@ typedef long long fixpt;
 
 #define VISIBILITY_THRESHOLD    50          // how bright cumulative light has to be before the cell is marked visible
 
-#ifdef RAPID_BROGUE
-#define AMULET_LEVEL            6          // how deep before the amulet appears
-#define DEEPEST_LEVEL           10          // how deep the universe goes
-#else
-#define AMULET_LEVEL            26          // how deep before the amulet appears
-#define DEEPEST_LEVEL           40          // how deep the universe goes
-#endif
-
-#ifdef RAPID_BROGUE
-#define MACHINES_FACTOR         3   // use this to adjust machine frequency
-#else
-#define MACHINES_FACTOR         1   // use this to adjust machine frequency
-#endif
-
 #define MACHINES_BUFFER_LENGTH  200
 
 #ifdef RAPID_BROGUE
+
+#define AMULET_LEVEL            6          // how deep before the amulet appears
+#define DEEPEST_LEVEL           10         // how deep the universe goes
+
+#define DEPTH_ACCELERATOR 4 //How quickly depth-dependent features scale as compared to the usual 26/40 levels
+
 #define MINIMUM_LAVA_LEVEL 2
 #define MINIMUM_BRIMSTONE_LEVEL 5
+
+#define BRIDGE_LEVEL_RATIO 2
+
+#define MACHINES_FACTOR 3
+
+#define MINERS_LIGHT_LEVEL_DECREASE_RATE 4
+
+#define WEAPON_KILLS_TO_AUTO_ID 5
+#define ARMOR_DELAY_TO_AUTO_ID  250
+#define RING_DELAY_TO_AUTO_ID   250
+
+#define SCROLL_ENCHANTING_POWER 2
+#define POTION_STRENGTH_POWER 2
+
+#define POTION_DARKNESS_DURATION 75
+#define POTION_FIRE_IMMUNITY_DURATION 75
+#define POTION_HALLUCINATION_DURATION 75
+#define POTION_HASTE_SELF_DURATION 25
+#define POTION_INVISIBILITY_DURATION 50
+#define POTION_LEVITATION_DURATION 75
+#define POTION_TELEPATHY_DURATION 50
+
+#define MONSTER_WEAKNESS_DURATION 100
+
+#define BOLT_INVISIBILITY_DURATION 75
+
+#define MUTATIONS_OCCUR_ABOVE_LEVEL 3
+
+#define TRANSFERENCE_RATIO 1 / 10
 #else
+
+#define AMULET_LEVEL            26          // how deep before the amulet appears
+#define DEEPEST_LEVEL           40          // how deep the universe goes
+
+#define DEPTH_ACCELERATOR 1 //How quickly depth-dependent features scale as compared to the usual 26/40 levels
+
 #define MINIMUM_LAVA_LEVEL 4
 #define MINIMUM_BRIMSTONE_LEVEL 17
-#endif
 
-#ifdef RAPID_BROGUE
-#define BRIDGE_LEVEL_RATIO 2
-#else
 #define BRIDGE_LEVEL_RATIO 9
-#endif
+
+#define MACHINES_FACTOR 1
+
+#define MINERS_LIGHT_LEVEL_DECREASE_RATE 1
 
 #define WEAPON_KILLS_TO_AUTO_ID 20
 #define ARMOR_DELAY_TO_AUTO_ID  1000
 #define RING_DELAY_TO_AUTO_ID   1500
+
+#define SCROLL_ENCHANTING_POWER 1
+#define POTION_STRENGTH_POWER 1
+
+#define POTION_DARKNESS_DURATION 400
+#define POTION_FIRE_IMMUNITY_DURATION 150
+#define POTION_HASTE_SELF_DURATION 25
+#define POTION_HALLUCINATION_DURATION 300
+#define POTION_INVISIBILITY_DURATION 100
+#define POTION_LEVITATION_DURATION 100
+#define POTION_TELEPATHY_DURATION 300
+
+#define MONSTER_WEAKNESS_DURATION 300
+
+#define BOLT_INVISIBILITY_DURATION 150
+
+#define MUTATIONS_OCCUR_ABOVE_LEVEL 10
+
+#define TRANSFERENCE_RATIO 1 / 20
+#endif
+
+#define MONSTER_HALLUCINATE_DURATION 20
 
 #define FALL_DAMAGE_MIN         8
 #define FALL_DAMAGE_MAX         10
@@ -1932,7 +1980,7 @@ enum terrainMechanicalFlagCatalog {
     TM_INTERRUPT_EXPLORATION_WHEN_SEEN = Fl(23),    // will generate a message when discovered during exploration to interrupt exploration
     TM_INVERT_WHEN_HIGHLIGHTED      = Fl(24),       // will flip fore and back colors when highlighted with pathing
     TM_SWAP_ENCHANTS_ACTIVATION     = Fl(25),       // in machine, swap item enchantments when two suitable items are on this terrain, and activate the machine when that happens
-    
+
     TM_PROMOTES_ON_STEP             = (TM_PROMOTES_ON_CREATURE | TM_PROMOTES_ON_ITEM),
 };
 
@@ -2635,9 +2683,6 @@ typedef struct feat {
 #define PDS_OBSTRUCTION -2
 #define PDS_CELL(map, x, y) ((map)->links + ((x) + DCOLS * (y)))
 
-typedef struct pdsLink pdsLink;
-typedef struct pdsMap pdsMap;
-
 typedef struct brogueButton {
     char text[COLS*3];          // button label; can include color escapes
     short x;                    // button's leftmost cell will be drawn at (x, y)
@@ -3339,9 +3384,6 @@ extern "C" {
                           rogueEvent *returnEvent);
 
     void dijkstraScan(short **distanceMap, short **costMap, boolean useDiagonals);
-    void pdsClear(pdsMap *map, short maxDistance, boolean eightWays);
-    void pdsSetDistance(pdsMap *map, short x, short y, short distance);
-    void pdsBatchOutput(pdsMap *map, short **distanceMap);
 
 #if defined __cplusplus
 }

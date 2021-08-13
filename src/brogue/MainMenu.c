@@ -172,7 +172,7 @@ void antiAlias(unsigned char mask[COLS][ROWS]) {
 }
 
 #define MENU_TITLE_WIDTH    74
-#define MENU_TITLE_HEIGHT   19
+#define MENU_TITLE_HEIGHT   25
 
 void initializeMenuFlames(boolean includeTitle,
                           const color *colors[COLS][(ROWS + MENU_FLAME_ROW_PADDING)],
@@ -201,6 +201,12 @@ void initializeMenuFlames(boolean includeTitle,
         "                            ##                                            ",
         "                            ##                                            ",
         "                           ####                                           ",
+        "                                                                          ",
+        "                           ######   #####  ######  ## ######              ",
+        "                           ##   ## ##   ## ##   ## ## ##   ##             ",
+        "                           ######  ####### ######  ## ##   ##             ",
+        "                           ##   ## ##   ## ##      ## ##   ##             ",
+        "                           ##   ## ##   ## ##      ## ######              "
     };
 
     for (i=0; i<COLS; i++) {

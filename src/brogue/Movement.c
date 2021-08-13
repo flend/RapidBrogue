@@ -479,39 +479,24 @@ void vomit(creature *monst) {
 void moveEntrancedMonsters(enum directions dir) {
     dir = oppositeDirection(dir);
 
-    if (BROGUE_VERSION_ATLEAST(1,9,3)) {
-        for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
-            creature *monst = nextCreature(&it);
-            monst->bookkeepingFlags &= ~MB_HAS_ENTRANCED_MOVED;
-        }
-
-        for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
-            creature *monst = nextCreature(&it);
-            if (!(monst->bookkeepingFlags & MB_HAS_ENTRANCED_MOVED)
-                && monst->status[STATUS_ENTRANCED]
-                && !monst->status[STATUS_STUCK]
-                && !monst->status[STATUS_PARALYZED]
-                && !(monst->bookkeepingFlags & MB_CAPTIVE)) {
-
-                moveMonster(monst, nbDirs[dir][0], nbDirs[dir][1]);
-                monst->bookkeepingFlags |= MB_HAS_ENTRANCED_MOVED;
-                restartIterator(&it); // loop through from the beginning to be safe
-            }
-        }
-
-    } else {
-        for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
-            creature *monst = nextCreature(&it);
-            if (monst->status[STATUS_ENTRANCED]
-                && !monst->status[STATUS_STUCK]
-                && !monst->status[STATUS_PARALYZED]
-                && !(monst->bookkeepingFlags & MB_CAPTIVE)) {
-
-                moveMonster(monst, nbDirs[dir][0], nbDirs[dir][1]);
-            }
-        }
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
+        creature *monst = nextCreature(&it);
+        monst->bookkeepingFlags &= ~MB_HAS_ENTRANCED_MOVED;
     }
 
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
+        creature *monst = nextCreature(&it);
+        if (!(monst->bookkeepingFlags & MB_HAS_ENTRANCED_MOVED)
+            && monst->status[STATUS_ENTRANCED]
+            && !monst->status[STATUS_STUCK]
+            && !monst->status[STATUS_PARALYZED]
+            && !(monst->bookkeepingFlags & MB_CAPTIVE)) {
+
+            moveMonster(monst, nbDirs[dir][0], nbDirs[dir][1]);
+            monst->bookkeepingFlags |= MB_HAS_ENTRANCED_MOVED;
+            restartIterator(&it); // loop through from the beginning to be safe
+        }
+    }
 }
 
 void becomeAllyWith(creature *monst) {
@@ -742,7 +727,7 @@ void buildFlailHitList(const short x, const short y, const short newX, const sho
     short mx, my;
     short i = 0;
 
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *monst = nextCreature(&it);
         mx = monst->xLoc;
         my = monst->yLoc;
@@ -865,27 +850,6 @@ boolean playerMoves(short direction) {
             }
         }
 
-        if (!BROGUE_VERSION_ATLEAST(1,9,1) && player.status[STATUS_STUCK] && cellHasTerrainFlag(x, y, T_ENTANGLES)) {
-                // Don't interrupt exploration with this message.
-            if (--player.status[STATUS_STUCK]) {
-                if (!rogue.automationActive) {
-                    message("you struggle but cannot free yourself.", 0);
-                }
-            } else {
-                if (!rogue.automationActive) {
-                    message("you break free!", 0);
-                }
-                if (tileCatalog[pmap[x][y].layers[SURFACE]].flags & T_ENTANGLES) {
-                    pmap[x][y].layers[SURFACE] = NOTHING;
-                }
-            }
-            moveEntrancedMonsters(direction);
-            committed = true;
-            if (player.status[STATUS_STUCK]) {
-                playerTurnEnded();
-                return true;
-            }
-        }
     }
 
     if (((!cellHasTerrainFlag(newX, newY, T_OBSTRUCTS_PASSABILITY) || (cellHasTMFlag(newX, newY, TM_PROMOTES_WITH_KEY) && keyInPackFor(newX, newY)))
@@ -978,7 +942,7 @@ boolean playerMoves(short direction) {
         }
 
         if (player.bookkeepingFlags & MB_SEIZED) {
-            for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+            for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
                 creature *tempMonst = nextCreature(&it);
                 if ((tempMonst->bookkeepingFlags & MB_SEIZING)
                     && monstersAreEnemies(&player, tempMonst)
@@ -1101,7 +1065,7 @@ boolean playerMoves(short direction) {
             }
         }
 
-        if (BROGUE_VERSION_ATLEAST(1,9,1) && player.status[STATUS_STUCK] && cellHasTerrainFlag(x, y, T_ENTANGLES)) {
+        if (player.status[STATUS_STUCK] && cellHasTerrainFlag(x, y, T_ENTANGLES)) {
                 // Don't interrupt exploration with this message.
             if (--player.status[STATUS_STUCK]) {
                 if (!rogue.automationActive) {
@@ -1532,7 +1496,7 @@ void travelRoute(short path[1000][2], short steps) {
     rogue.disturbed = false;
     rogue.automationActive = true;
 
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *monst = nextCreature(&it);
         if (canSeeMonster(monst)) {
             monst->bookkeepingFlags |= MB_ALREADY_SEEN;
@@ -1747,7 +1711,7 @@ void populateCreatureCostMap(short **costMap, creature *monst) {
     item *theItem;
     unsigned long tFlags, cFlags;
 
-    unexploredCellCost = 10 + (clamp(rogue.depthLevel, 5, 15) - 5) * 2;
+    unexploredCellCost = 10 + (clamp(rogue.depthLevel * DEPTH_ACCELERATOR, 5, 15) - 5) * 2;
 
     for (i=0; i<DCOLS; i++) {
         for (j=0; j<DROWS; j++) {
@@ -1930,7 +1894,7 @@ boolean explore(short frameDelay) {
         return false;
     }
 
-    for (creatureIterator it = iterateCreatures(&monsters); hasNextCreature(it);) {
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *monst = nextCreature(&it);
         if (canSeeMonster(monst)) {
             monst->bookkeepingFlags |= MB_ALREADY_SEEN;

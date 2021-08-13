@@ -5,7 +5,7 @@ on:
 jobs:
 
   linux:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
     - name: "Install dependencies"
       run: |
@@ -21,14 +21,14 @@ jobs:
 
     - name: "Create artifact"
       run: |
-        make BrogueCE-linux
-        tar -czvf BrogueCE-linux-x86_64.tar.gz BrogueCE-linux
+        make RapidBrogue-linux
+        tar -czvf RapidBrogue-linux-x86_64.tar.gz RapidBrogue-linux
 
     - name: "Upload artifact"
       uses: actions/upload-artifact@v2
       with:
         name: linux-x86_64
-        path: BrogueCE-linux-x86_64.tar.gz
+        path: RapidBrogue-linux-x86_64.tar.gz
 
   macos:
     runs-on: macos-latest
@@ -70,14 +70,14 @@ jobs:
 
     - name: "Create artifact"
       run: |
-        make BrogueCE-macos
-        zip -rll BrogueCE-macos-x86_64.zip BrogueCE-macos
+        make RapidBrogue-macos
+        zip -rll RapidBrogue-macos-x86_64.zip RapidBrogue-macos
 
     - name: "Upload artifact"
       uses: actions/upload-artifact@v2
       with:
         name: macos-x86_64
-        path: BrogueCE-macos-x86_64.zip
+        path: RapidBrogue-macos-x86_64.zip
 
   windows:
     runs-on: windows-latest
@@ -98,15 +98,15 @@ jobs:
 
     - name: "Create artifact"
       run: |
-        mingw32-make BrogueCE-windows
-        cp SDL2\x86_64-w64-mingw32\bin\SDL2.dll BrogueCE-windows
-        cp SDL2_image\x86_64-w64-mingw32\bin\zlib1.dll BrogueCE-windows
-        cp SDL2_image\x86_64-w64-mingw32\bin\SDL2_image.dll BrogueCE-windows
-        cp SDL2_image\x86_64-w64-mingw32\bin\libpng16-16.dll BrogueCE-windows
-        7z a BrogueCE-windows-x86_64.zip BrogueCE-windows
+        mingw32-make RapidBrogue-windows
+        cp SDL2\x86_64-w64-mingw32\bin\SDL2.dll RapidBrogue-windows
+        cp SDL2_image\x86_64-w64-mingw32\bin\zlib1.dll RapidBrogue-windows
+        cp SDL2_image\x86_64-w64-mingw32\bin\SDL2_image.dll RapidBrogue-windows
+        cp SDL2_image\x86_64-w64-mingw32\bin\libpng16-16.dll RapidBrogue-windows
+        7z a RapidBrogue-windows-x86_64.zip RapidBrogue-windows
 
     - name: "Upload artifact"
       uses: actions/upload-artifact@v2
       with:
         name: windows-x86_64
-        path: BrogueCE-windows-x86_64.zip
+        path: RapidBrogue-windows-x86_64.zip
