@@ -7041,8 +7041,8 @@ void drinkPotion(item *theItem) {
             exposeCreatureToFire(&player);
             break;
         case POTION_DARKNESS:
-            player.status[STATUS_DARKNESS] = max(POTION_DARKNESS_DURATION, player.status[STATUS_DARKNESS]);
-            player.maxStatus[STATUS_DARKNESS] = max(POTION_DARKNESS_DURATION, player.maxStatus[STATUS_DARKNESS]);
+            player.status[STATUS_DARKNESS] = max(POTION_DARKNESS_EFFECT, player.status[STATUS_DARKNESS]);
+            player.maxStatus[STATUS_DARKNESS] = max(POTION_DARKNESS_EFFECT, player.maxStatus[STATUS_DARKNESS]);
             updateMinersLightRadius();
             updateVision(true);
             message("your vision flickers as a cloak of darkness settles around you!", 0);
