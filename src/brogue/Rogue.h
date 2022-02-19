@@ -37,8 +37,8 @@
 
 // Brogue version number
 #define BROGUE_MAJOR 1
-#define BROGUE_MINOR 2
-#define BROGUE_PATCH 0
+#define BROGUE_MINOR 10
+#define BROGUE_PATCH 2
 
 // Expanding a macro as a string constant requires two levels of macros
 #define _str(x) #x
@@ -70,7 +70,7 @@ strings, but they are equal (rogue.patchLevel is set to 0).
 #ifdef RAPID_BROGUE
 #define BROGUE_CE_MAJOR 1
 #define BROGUE_CE_MINOR 10
-#define BROGUE_CE_PATCH 1
+#define BROGUE_CE_PATCH 2
 
 #define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_CE_MAJOR != (a) ? BROGUE_CE_MAJOR > (a) : BROGUE_CE_MINOR != (b) ? BROGUE_CE_MINOR > (b) : BROGUE_CE_PATCH >= (c))
 #else
@@ -151,6 +151,11 @@ typedef long long fixpt;
 // Size of the entire terminal window. These need to be hard-coded here and in Viewport.h
 #define COLS                    100
 #define ROWS                    (31 + MESSAGE_LINES)
+
+typedef struct pos {
+    short x;
+    short y;
+} pos;
 
 // Size of the portion of the terminal window devoted to displaying the dungeon:
 #define DCOLS                   (COLS - STAT_BAR_WIDTH - 1) // n columns on the left for the sidebar;
@@ -808,6 +813,13 @@ enum itemCategory {
     GEM                 = Fl(11),
     KEY                 = Fl(12),
 
+    // Categories where the kinds have intrinsic magic polarity; i.e. each kind
+    // has a certain polarity (with positive enchant) which doesn't depend on
+    // the specific item. NOTE: Rings are considered to be naturally good, but
+    // may be bad when negatively enchanted. We also assume that none of the
+    // kinds in these categories have neutral polarity.
+    HAS_INTRINSIC_POLARITY = (POTION | SCROLL | RING | WAND | STAFF),
+
     CAN_BE_DETECTED     = (WEAPON | ARMOR | POTION | SCROLL | RING | CHARM | WAND | STAFF | AMULET),
     PRENAMED_CATEGORY   = (FOOD | GOLD | AMULET | GEM | KEY),
     NEVER_IDENTIFIABLE  = (FOOD | CHARM | GOLD | AMULET | GEM | KEY),
@@ -838,6 +850,7 @@ enum potionKind {
     POTION_FIRE_IMMUNITY,
     POTION_INVISIBILITY,
     POTION_POISON,
+    NUMBER_GOOD_POTION_KINDS = POTION_POISON,
     POTION_PARALYSIS,
     POTION_HALLUCINATION,
     POTION_CONFUSION,
@@ -921,6 +934,7 @@ enum wandKind {
     WAND_DOMINATION,
     WAND_BECKONING,
     WAND_PLENTY,
+    NUMBER_GOOD_WAND_KINDS = WAND_PLENTY,
     WAND_INVISIBILITY,
     WAND_EMPOWERMENT,
     NUMBER_WAND_KINDS
@@ -937,6 +951,7 @@ enum staffKind {
     STAFF_DISCORD,
     STAFF_CONJURATION,
     STAFF_HEALING,
+    NUMBER_GOOD_STAFF_KINDS = STAFF_HEALING,
     STAFF_HASTE,
     STAFF_PROTECTION,
     NUMBER_STAFF_KINDS
@@ -1019,6 +1034,7 @@ enum scrollKind {
     SCROLL_SHATTERING,
     SCROLL_DISCORD,
     SCROLL_AGGRAVATE_MONSTER,
+    NUMBER_GOOD_SCROLL_KINDS = SCROLL_AGGRAVATE_MONSTER,
     SCROLL_SUMMON_MONSTER,
     NUMBER_SCROLL_KINDS
 };
@@ -1440,8 +1456,7 @@ typedef struct item {
     short quantity;
     char inventoryLetter;
     char inscription[DCOLS];
-    short xLoc;
-    short yLoc;
+    pos loc;
     keyLocationProfile keyLoc[KEY_ID_MAXIMUM];
     short originDepth;
     unsigned long spawnTurnNumber;
@@ -1459,6 +1474,8 @@ typedef struct itemTable {
     randomRange range;
     boolean identified;
     boolean called;
+    int magicPolarity;
+    boolean magicPolarityRevealed;
     char description[1500];
 } itemTable;
 
@@ -1798,7 +1815,7 @@ typedef struct flare {
     lightSource *light;                 // Flare light
     short coeffChangeAmount;            // The constant amount by which the coefficient changes per frame, e.g. -25 means it gets 25% dimmer per frame.
     short coeffLimit;                   // Flare ends if the coefficient passes this percentage (whether going up or down).
-    short xLoc, yLoc;                   // Current flare location.
+    pos loc;                            // Current flare location.
     long coeff;                         // Current flare coefficient; always starts at 100.
     unsigned long turnNumber;           // So we can eliminate those that fired one or more turns ago.
 } flare;
@@ -2234,8 +2251,7 @@ typedef struct monsterClass {
 
 typedef struct creature {
     creatureType info;
-    short xLoc;
-    short yLoc;
+    pos loc;
     short depth;
     short currentHP;
     long turnsUntilRegen;
@@ -2391,10 +2407,10 @@ typedef struct playerCharacter {
 
     short previousPoisonPercent;        // and your poison proportion, to display percentage alerts for each.
 
-    short upLoc[2];                     // upstairs location this level
-    short downLoc[2];                   // downstairs location this level
+    pos upLoc;                          // upstairs location this level
+    pos downLoc;                        // downstairs location this level
 
-    short cursorLoc[2];                 // used for the return key functionality
+    pos cursorLoc;                      // used for the return key functionality
     creature *lastTarget;               // to keep track of the last monster the player has thrown at or zapped
     item *lastItemThrown;
     short rewardRoomsGenerated;         // to meter the number of reward machines
@@ -2474,9 +2490,9 @@ typedef struct levelData {
     struct creatureList dormantMonsters;
     short **scentMap;
     uint64_t levelSeed;
-    short upStairsLoc[2];
-    short downStairsLoc[2];
-    short playerExitedVia[2];
+    pos upStairsLoc;
+    pos downStairsLoc;
+    pos playerExitedVia;
     unsigned long awaySince;
 } levelData;
 
@@ -2741,7 +2757,7 @@ typedef struct archivedMessage {
     char message[COLS*2];
     unsigned char count;          // how many times this message appears
     unsigned long turn;           // player turn of the first occurrence
-    enum messageFlags flags;
+    unsigned long flags;
 } archivedMessage;
 
 extern boolean serverMode;
@@ -2913,6 +2929,7 @@ extern "C" {
     void displayChokeMap();
     void displayLoops();
     boolean pauseBrogue(short milliseconds);
+    boolean pauseAnimation(short milliseconds);
     void nextBrogueEvent(rogueEvent *returnEvent, boolean textInput, boolean colorsDance, boolean realInputEvenInPlayback);
     void executeMouseClick(rogueEvent *theEvent);
     void executeKeystroke(signed long keystroke, boolean controlKey, boolean shiftKey);
@@ -2999,10 +3016,10 @@ extern "C" {
     void formatRecentMessages(char buf[][COLS*2], size_t height, short *linesFormatted, short *latestMessageLines);
     void displayRecentMessages();
     void displayMessageArchive();
-    void temporaryMessage(const char *msg1, enum messageFlags flags);
-    void messageWithColor(char *msg, color *theColor, enum messageFlags flags);
+    void temporaryMessage(const char *msg1, unsigned long flags);
+    void messageWithColor(char *msg, color *theColor, unsigned long flags);
     void flavorMessage(char *msg);
-    void message(const char *msg, enum messageFlags flags);
+    void message(const char *msg, unsigned long flags);
     void displayMoreSignWithoutWaitingForAcknowledgment();
     void displayMoreSign();
     short encodeMessageColor(char *msg, short i, const color *theColor);
@@ -3145,7 +3162,7 @@ extern "C" {
     boolean moveCursor(boolean *targetConfirmed,
                        boolean *canceled,
                        boolean *tabKey,
-                       short targetLoc[2],
+                       pos *targetLoc,
                        rogueEvent *event,
                        buttonState *state,
                        boolean colorsDance,
@@ -3160,6 +3177,7 @@ extern "C" {
     void itemKindName(item *theItem, char *kindName);
     void itemRunicName(item *theItem, char *runicName);
     void itemName(item *theItem, char *root, boolean includeDetails, boolean includeArticle, color *baseColor);
+    int itemKindCount(enum itemCategory category, int magicPolarity);
     char displayInventory(unsigned short categoryMask,
                           unsigned long requiredFlags,
                           unsigned long forbiddenFlags,
@@ -3184,7 +3202,7 @@ extern "C" {
     void unequip(item *theItem);
     void drop(item *theItem);
     void findAlternativeHomeFor(creature *monst, short *x, short *y, boolean chooseRandomly);
-    boolean getQualifyingLocNear(short loc[2],
+    boolean getQualifyingLocNear(pos *loc,
                                  short x, short y,
                                  boolean hallwaysAllowed,
                                  char blockingMap[DCOLS][DROWS],
@@ -3192,7 +3210,7 @@ extern "C" {
                                  unsigned long forbiddenMapFlags,
                                  boolean forbidLiquid,
                                  boolean deterministic);
-    boolean getQualifyingGridLocNear(short loc[2],
+    boolean getQualifyingGridLocNear(pos *loc,
                                      short x, short y,
                                      boolean grid[DCOLS][DROWS],
                                      boolean deterministic);
@@ -3259,7 +3277,7 @@ extern "C" {
     int itemMagicPolarity(item *theItem);
     item *itemAtLoc(short x, short y);
     item *dropItem(item *theItem);
-    itemTable *tableForItemCategory(enum itemCategory theCat, short *kindCount);
+    itemTable *tableForItemCategory(enum itemCategory theCat);
     boolean isVowelish(char *theChar);
     short charmEffectDuration(short charmKind, short enchant);
     short charmRechargeDelay(short charmKind, short enchant);
