@@ -172,7 +172,11 @@ void antiAlias(unsigned char mask[COLS][ROWS]) {
 }
 
 #define MENU_TITLE_WIDTH    74
+#ifdef RAPID_BROGUE
 #define MENU_TITLE_HEIGHT   25
+#else
+#define MENU_TITLE_HEIGHT   19
+#endif
 
 void initializeMenuFlames(boolean includeTitle,
                           const color *colors[COLS][(ROWS + MENU_FLAME_ROW_PADDING)],
@@ -181,6 +185,7 @@ void initializeMenuFlames(boolean includeTitle,
                           signed short flames[COLS][(ROWS + MENU_FLAME_ROW_PADDING)][3],
                           unsigned char mask[COLS][ROWS]) {
     short i, j, k, colorSourceCount;
+#ifdef RAPID_BROGUE
     const char title[MENU_TITLE_HEIGHT][MENU_TITLE_WIDTH+1] = {
         "########   ########       ######         #######   ####     ###  #########",
         " ##   ###   ##   ###    ##     ###     ##      ##   ##       #    ##     #",
@@ -208,6 +213,29 @@ void initializeMenuFlames(boolean includeTitle,
         "                           ##   ## ##   ## ##      ## ##   ##             ",
         "                           ##   ## ##   ## ##      ## ######              "
     };
+#else
+const char title[MENU_TITLE_HEIGHT][MENU_TITLE_WIDTH+1] = {
+        "########   ########       ######         #######   ####     ###  #########",
+        " ##   ###   ##   ###    ##     ###     ##      ##   ##       #    ##     #",
+        " ##    ##   ##    ##   ##       ###   ##        #   ##       #    ##     #",
+        " ##    ##   ##    ##   #    #    ##   #         #   ##       #    ##      ",
+        " ##    ##   ##    ##  ##   ##     ## ##             ##       #    ##    # ",
+        " ##   ##    ##   ##   ##   ###    ## ##             ##       #    ##    # ",
+        " ######     ## ###    ##   ####   ## ##             ##       #    ####### ",
+        " ##    ##   ##  ##    ##   ####   ## ##             ##       #    ##    # ",
+        " ##     ##  ##   ##   ##    ###   ## ##      #####  ##       #    ##    # ",
+        " ##     ##  ##   ##   ###    ##   ## ###       ##   ##       #    ##      ",
+        " ##     ##  ##    ##   ##    #    #   ##       ##   ##       #    ##      ",
+        " ##     ##  ##    ##   ###       ##   ###      ##   ###      #    ##     #",
+        " ##    ##   ##     ##   ###     ##     ###    ###    ###    #     ##     #",
+        "########   ####    ###    ######         #####        ######     #########",
+        "                            ##                                            ",
+        "                        ##########                                        ",
+        "                            ##                                            ",
+        "                            ##                                            ",
+        "                           ####                                           "
+    };
+#endif
 
     for (i=0; i<COLS; i++) {
         for (j=0; j<ROWS; j++) {
