@@ -3192,6 +3192,7 @@ extern "C" {
     int itemMagicPolarity(item *theItem);
     item *itemAtLoc(short x, short y);
     item *dropItem(item *theItem);
+    int enchantMagnitude(void);
     itemTable *tableForItemCategory(enum itemCategory theCat);
     boolean isVowelish(char *theChar);
     short charmEffectDuration(short charmKind, short enchant);
