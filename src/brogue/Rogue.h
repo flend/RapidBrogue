@@ -2375,6 +2375,7 @@ typedef struct playerCharacter {
     boolean eligibleToUseStairs;        // so the player uses stairs only when he steps onto them
     boolean trueColorMode;              // whether lighting effects are disabled
     boolean displayStealthRangeMode;    // whether your stealth range is displayed
+    boolean hideSeed;                   // whether seed is hidden when pressing SEED_KEY
     boolean quit;                       // to skip the typical end-game theatrics when the player quits
     uint64_t seed;                      // the master seed for generating the entire dungeon
     short RNG;                          // which RNG are we currently using?

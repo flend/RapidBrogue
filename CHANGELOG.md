@@ -10,6 +10,8 @@ RAPID BROGUE CHANGES
   Fixed bug with darkness potion effect being too low
 -
   Changed secret door generation frequency to scale correctly with RapidBrogue level (more secret doors)
+-
+  Added --hide-seed option for concealing seed (useful online)
 
 1.2.0
 =====
