@@ -143,7 +143,7 @@ void welcome() {
 void initializeRogue(uint64_t seed) {
     short i, j, k;
     item *theItem;
-    boolean playingback, playbackFF, playbackPaused, wizard, displayAggroRangeMode;
+    boolean playingback, playbackFF, playbackPaused, wizard, displayAggroRangeMode, hideSeed;
     boolean trueColorMode;
     short oldRNG;
 
@@ -151,6 +151,7 @@ void initializeRogue(uint64_t seed) {
     playbackPaused = rogue.playbackPaused;
     playbackFF = rogue.playbackFastForward;
     wizard = rogue.wizard;
+    hideSeed = rogue.hideSeed;
     displayAggroRangeMode = rogue.displayAggroRangeMode;
     trueColorMode = rogue.trueColorMode;
     memset((void *) &rogue, 0, sizeof( playerCharacter )); // the flood
@@ -158,6 +159,7 @@ void initializeRogue(uint64_t seed) {
     rogue.playbackPaused = playbackPaused;
     rogue.playbackFastForward = playbackFF;
     rogue.wizard = wizard;
+    rogue.hideSeed = hideSeed;
     rogue.displayAggroRangeMode = displayAggroRangeMode;
     rogue.trueColorMode = trueColorMode;
 
