@@ -37,8 +37,8 @@
 
 // Brogue version number
 #define BROGUE_MAJOR 1
-#define BROGUE_MINOR 11
-#define BROGUE_PATCH 1
+#define BROGUE_MINOR 3
+#define BROGUE_PATCH 0
 
 // Expanding a macro as a string constant requires two levels of macros
 #define _str(x) #x
@@ -64,13 +64,13 @@ strings, but they are equal (rogue.patchLevel is set to 0).
 #define BROGUE_PATCH_VERSION_PATTERN "RB " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) ".%hu"
 
 // Dungeon version. Used in seed catalog output.
-#define BROGUE_DUNGEON_VERSION_STRING "RB 1.2.0"
+#define BROGUE_DUNGEON_VERSION_STRING "RB 1.3.0"
 
 // Macro to compare BROGUE_MAJOR.BROGUE_MINOR.patchVersion to a.b.c
 #ifdef RAPID_BROGUE
 #define BROGUE_CE_MAJOR 1
-#define BROGUE_CE_MINOR 10
-#define BROGUE_CE_PATCH 2
+#define BROGUE_CE_MINOR 11
+#define BROGUE_CE_PATCH 1
 
 #define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_CE_MAJOR != (a) ? BROGUE_CE_MAJOR > (a) : BROGUE_CE_MINOR != (b) ? BROGUE_CE_MINOR > (b) : BROGUE_CE_PATCH >= (c))
 #else
