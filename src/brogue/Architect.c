@@ -2709,7 +2709,7 @@ void fillLakes(short **lakeMap) {
 
 void finishDoors() {
     short i, j;
-    const short secretDoorChance = clamp((rogue.depthLevel - 1) * 67 / 25, 0, 67);
+    const short secretDoorChance = clamp((rogue.depthLevel - 1) * 67 / (AMULET_LEVEL - 1), 0, 67);
     for (i=1; i<DCOLS-1; i++) {
         for (j=1; j<DROWS-1; j++) {
             if (pmap[i][j].layers[DUNGEON] == DOOR

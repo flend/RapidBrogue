@@ -8,7 +8,9 @@ RAPID BROGUE CHANGES
   Upgraded to Brogue CE 1.11.1 release
 -
   Fixed bug with darkness potion effect being too low
-  
+-
+  Changed secret door generation frequency to scale correctly with RapidBrogue level (more secret doors)
+
 1.2.0
 =====
 
