@@ -168,6 +168,7 @@ void initializeRogue(uint64_t seed) {
     rogue.highScoreSaved = false;
     rogue.cautiousMode = false;
     rogue.milliseconds = 0;
+    rogue.warningPauseMode = false;
 
     rogue.RNG = RNG_SUBSTANTIVE;
     if (!rogue.playbackMode) {

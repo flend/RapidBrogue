@@ -12,6 +12,8 @@ RAPID BROGUE CHANGES
   Changed secret door generation frequency to scale correctly with RapidBrogue level (more secret doors)
 -
   Added --hide-seed option for concealing seed (useful online)
+-
+  Added (optional) warning and pause game on low health / high poison
 
 1.2.0
 =====
