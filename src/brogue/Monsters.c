@@ -88,7 +88,7 @@ creature *generateMonster(short monsterID, boolean itemPossible, boolean mutatio
     }
 
     prependCreature(monsters, monst);
-    monst->xLoc = monst->yLoc = 0;
+    monst->loc.x = monst->loc.y = 0;
     monst->depth = rogue.depthLevel;
     monst->bookkeepingFlags = 0;
     monst->mapToMe = NULL;
@@ -178,7 +178,7 @@ boolean monsterRevealed(creature *monst) {
 boolean monsterHiddenBySubmersion(const creature *monst, const creature *observer) {
     if (monst->bookkeepingFlags & MB_SUBMERGED) {
         if (observer
-            && (terrainFlags(observer->xLoc, observer->yLoc) & T_IS_DEEP_WATER)
+            && (terrainFlags(observer->loc.x, observer->loc.y) & T_IS_DEEP_WATER)
             && !observer->status[STATUS_LEVITATING]) {
             // observer is in deep water, so target is not hidden by water
             return false;
@@ -198,7 +198,7 @@ boolean monsterIsHidden(const creature *monst, const creature *observer) {
         // Teammates can always see each other.
         return false;
     }
-    if ((monst->status[STATUS_INVISIBLE] && !pmap[monst->xLoc][monst->yLoc].layers[GAS])) {
+    if ((monst->status[STATUS_INVISIBLE] && !pmap[monst->loc.x][monst->loc.y].layers[GAS])) {
         // invisible and not in gas
         return true;
     }
@@ -213,7 +213,7 @@ boolean canSeeMonster(creature *monst) {
         return true;
     }
     if (!monsterIsHidden(monst, &player)
-        && (playerCanSee(monst->xLoc, monst->yLoc) || monsterRevealed(monst))) {
+        && (playerCanSee(monst->loc.x, monst->loc.y) || monsterRevealed(monst))) {
         return true;
     }
     return false;
@@ -224,7 +224,7 @@ boolean canDirectlySeeMonster(creature *monst) {
     if (monst == &player) {
         return true;
     }
-    if (playerCanDirectlySee(monst->xLoc, monst->yLoc) && !monsterIsHidden(monst, &player)) {
+    if (playerCanDirectlySee(monst->loc.x, monst->loc.y) && !monsterIsHidden(monst, &player)) {
         return true;
     }
     return false;
@@ -238,7 +238,7 @@ void monsterName(char *buf, creature *monst, boolean includeArticle) {
         return;
     }
     if (canSeeMonster(monst) || rogue.playbackOmniscience) {
-        if (player.status[STATUS_HALLUCINATING] && !rogue.playbackOmniscience) {
+        if (player.status[STATUS_HALLUCINATING] && !rogue.playbackOmniscience && !player.status[STATUS_TELEPATHIC]) {
 
             oldRNG = rogue.RNG;
             rogue.RNG = RNG_COSMETIC;
@@ -273,7 +273,7 @@ boolean monsterIsInClass(const creature *monst, const short monsterClass) {
 // Don't attack a monster embedded in obstruction crystal.
 // Etc.
 boolean attackWouldBeFutile(const creature *attacker, const creature *defender) {
-    if (cellHasTerrainFlag(defender->xLoc, defender->yLoc, T_OBSTRUCTS_PASSABILITY)
+    if (cellHasTerrainFlag(defender->loc.x, defender->loc.y, T_OBSTRUCTS_PASSABILITY)
         && !(defender->info.flags & MONST_ATTACKABLE_THRU_WALLS)) {
         return true;
     }
@@ -361,12 +361,12 @@ boolean monstersAreEnemies(const creature *monst1, const creature *monst2) {
     if (((monst1->info.flags & MONST_RESTRICTED_TO_LIQUID)
          && !(monst2->info.flags & MONST_IMMUNE_TO_WATER)
          && !(monst2->status[STATUS_LEVITATING])
-         && cellHasTerrainFlag(monst2->xLoc, monst2->yLoc, T_IS_DEEP_WATER))
+         && cellHasTerrainFlag(monst2->loc.x, monst2->loc.y, T_IS_DEEP_WATER))
 
         || ((monst2->info.flags & MONST_RESTRICTED_TO_LIQUID)
             && !(monst1->info.flags & MONST_IMMUNE_TO_WATER)
             && !(monst1->status[STATUS_LEVITATING])
-            && cellHasTerrainFlag(monst1->xLoc, monst1->yLoc, T_IS_DEEP_WATER))) {
+            && cellHasTerrainFlag(monst1->loc.x, monst1->loc.y, T_IS_DEEP_WATER))) {
 
             return true;
         }
@@ -479,7 +479,7 @@ short pickHordeType(short depth, enum monsterTypes summonerType, unsigned long f
             && ((!summonerType && hordeCatalog[i].minLevel <= depth && hordeCatalog[i].maxLevel >= depth)
                 || (summonerType && (hordeCatalog[i].flags & HORDE_IS_SUMMONED) && hordeCatalog[i].leaderType == summonerType))) {
                 possCount += hordeCatalog[i].frequency;
-            }
+        }
     }
 
     if (possCount == 0) {
@@ -560,14 +560,14 @@ creature *cloneMonster(creature *monst, boolean announce, boolean placeClone) {
     }
 
     if (placeClone) {
-//      getQualifyingLocNear(loc, monst->xLoc, monst->yLoc, true, 0, forbiddenFlagsForMonster(&(monst->info)), (HAS_PLAYER | HAS_MONSTER), false, false);
-//      newMonst->xLoc = loc[0];
-//      newMonst->yLoc = loc[1];
-        getQualifyingPathLocNear(&(newMonst->xLoc), &(newMonst->yLoc), monst->xLoc, monst->yLoc, true,
+//      getQualifyingLocNear(loc, monst->loc.x, monst->loc.y, true, 0, forbiddenFlagsForMonster(&(monst->info)), (HAS_PLAYER | HAS_MONSTER), false, false);
+//      newMonst->loc.x = loc[0];
+//      newMonst->loc.y = loc[1];
+        getQualifyingPathLocNear(&(newMonst->loc.x), &(newMonst->loc.y), monst->loc.x, monst->loc.y, true,
                                  T_DIVIDES_LEVEL & avoidedFlagsForMonster(&(newMonst->info)), HAS_PLAYER,
                                  avoidedFlagsForMonster(&(newMonst->info)), (HAS_PLAYER | HAS_MONSTER | HAS_STAIRS), false);
-        pmap[newMonst->xLoc][newMonst->yLoc].flags |= HAS_MONSTER;
-        refreshDungeonCell(newMonst->xLoc, newMonst->yLoc);
+        pmap[newMonst->loc.x][newMonst->loc.y].flags |= HAS_MONSTER;
+        refreshDungeonCell(newMonst->loc.x, newMonst->loc.y);
         if (announce && canSeeMonster(newMonst)) {
             monsterName(monstName, newMonst, false);
             sprintf(buf, "another %s appears!", monstName);
@@ -649,12 +649,12 @@ unsigned long avoidedFlagsForMonster(creatureType *monsterType) {
 
 boolean monsterCanSubmergeNow(creature *monst) {
     return ((monst->info.flags & MONST_SUBMERGES)
-            && cellHasTMFlag(monst->xLoc, monst->yLoc, TM_ALLOWS_SUBMERGING)
-            && !cellHasTerrainFlag(monst->xLoc, monst->yLoc, T_OBSTRUCTS_PASSABILITY)
+            && cellHasTMFlag(monst->loc.x, monst->loc.y, TM_ALLOWS_SUBMERGING)
+            && !cellHasTerrainFlag(monst->loc.x, monst->loc.y, T_OBSTRUCTS_PASSABILITY)
             && !(monst->bookkeepingFlags & (MB_SEIZING | MB_SEIZED | MB_CAPTIVE))
             && ((monst->info.flags & (MONST_IMMUNE_TO_FIRE | MONST_INVULNERABLE))
                 || monst->status[STATUS_IMMUNE_TO_FIRE]
-                || !cellHasTerrainFlag(monst->xLoc, monst->yLoc, T_LAVA_INSTA_DEATH)));
+                || !cellHasTerrainFlag(monst->loc.x, monst->loc.y, T_LAVA_INSTA_DEATH)));
 }
 
 // Returns true if at least one minion spawned.
@@ -667,8 +667,8 @@ boolean spawnMinions(short hordeID, creature *leader, boolean summoned, boolean 
     short failsafe;
     boolean atLeastOneMinion = false;
 
-    x = leader->xLoc;
-    y = leader->yLoc;
+    x = leader->loc.x;
+    y = leader->loc.y;
 
     theHorde = &hordeCatalog[hordeID];
 
@@ -684,10 +684,10 @@ boolean spawnMinions(short hordeID, creature *leader, boolean summoned, boolean 
             monst = generateMonster(theHorde->memberType[iSpecies], itemPossible, !summoned);
             failsafe = 0;
             do {
-                getQualifyingPathLocNear(&(monst->xLoc), &(monst->yLoc), x, y, summoned,
+                getQualifyingPathLocNear(&(monst->loc.x), &(monst->loc.y), x, y, summoned,
                                          T_DIVIDES_LEVEL & forbiddenTerrainFlags, (HAS_PLAYER | HAS_STAIRS),
                                          forbiddenTerrainFlags, HAS_MONSTER, false);
-            } while (theHorde->spawnsIn && !cellHasTerrainType(monst->xLoc, monst->yLoc, theHorde->spawnsIn) && failsafe++ < 20);
+            } while (theHorde->spawnsIn && !cellHasTerrainType(monst->loc.x, monst->loc.y, theHorde->spawnsIn) && failsafe++ < 20);
             if (failsafe >= 20) {
                 // abort
                 killCreature(monst, true);
@@ -696,8 +696,8 @@ boolean spawnMinions(short hordeID, creature *leader, boolean summoned, boolean 
             if (monsterCanSubmergeNow(monst)) {
                 monst->bookkeepingFlags |= MB_SUBMERGED;
             }
-            brogueAssert(!(pmap[monst->xLoc][monst->yLoc].flags & HAS_MONSTER));
-            pmap[monst->xLoc][monst->yLoc].flags |= HAS_MONSTER;
+            brogueAssert(!(pmap[monst->loc.x][monst->loc.y].flags & HAS_MONSTER));
+            pmap[monst->loc.x][monst->loc.y].flags |= HAS_MONSTER;
             monst->bookkeepingFlags |= (MB_FOLLOWER | MB_JUST_SUMMONED);
             monst->leader = leader;
             monst->creatureState = leader->creatureState;
@@ -822,8 +822,8 @@ creature *spawnHorde(short hordeID, short x, short y, unsigned long forbiddenFla
     }
 
     leader = generateMonster(theHorde->leaderType, true, true);
-    leader->xLoc = x;
-    leader->yLoc = y;
+    leader->loc.x = x;
+    leader->loc.y = y;
 
     if (hordeCatalog[hordeID].flags & HORDE_LEADER_CAPTIVE) {
         leader->bookkeepingFlags |= MB_CAPTIVE;
@@ -873,7 +873,7 @@ creature *spawnHorde(short hordeID, short x, short y, unsigned long forbiddenFla
 void fadeInMonster(creature *monst) {
     color fColor, bColor;
     enum displayGlyph displayChar;
-    getCellAppearance(monst->xLoc, monst->yLoc, &displayChar, &fColor, &bColor);
+    getCellAppearance(monst->loc.x, monst->loc.y, &displayChar, &fColor, &bColor);
     flashMonster(monst, &bColor, 100);
 }
 
@@ -886,6 +886,10 @@ creatureIterator iterateCreatures(creatureList *list) {
     creatureIterator iter;
     iter.list = list;
     iter.next = list->head;
+    // Skip monsters that have died.
+    while (iter.next != NULL && iter.next->creature->bookkeepingFlags & MB_HAS_DIED) {
+        iter.next = iter.next->nextCreature;
+    }
     return iter;
 }
 boolean hasNextCreature(creatureIterator iter) {
@@ -897,10 +901,11 @@ creature *nextCreature(creatureIterator *iter) {
     }
     creature *result = iter->next->creature;
     iter->next = iter->next->nextCreature;
+    // Skip monsters that have died.
+    while (iter->next != NULL && iter->next->creature->bookkeepingFlags & MB_HAS_DIED) {
+        iter->next = iter->next->nextCreature;
+    }
     return result;
-}
-void restartIterator(creatureIterator *iter) {
-    iter->next = iter->list->head;
 }
 void prependCreature(creatureList *list, creature *add) {
     creatureListNode *node = calloc(1, sizeof(creatureListNode));
@@ -951,7 +956,7 @@ boolean summonMinions(creature *summoner) {
     }
 
     if (summoner->info.abilityFlags & MA_ENTER_SUMMONS) {
-        pmap[summoner->xLoc][summoner->yLoc].flags &= ~HAS_MONSTER;
+        pmap[summoner->loc.x][summoner->loc.y].flags &= ~HAS_MONSTER;
         removeCreature(monsters, summoner);
     }
 
@@ -962,7 +967,7 @@ boolean summonMinions(creature *summoner) {
         // not in harmful terrain, and outside of the player's field of view.
         grid = allocGrid();
         fillGrid(grid, 0);
-        calculateDistances(grid, summoner->xLoc, summoner->yLoc, (T_PATHING_BLOCKER | T_SACRED), NULL, true, true);
+        calculateDistances(grid, summoner->loc.x, summoner->loc.y, (T_PATHING_BLOCKER | T_SACRED), NULL, true, true);
         findReplaceGrid(grid, 1, DCOLS/2, 1);
         findReplaceGrid(grid, 2, 30000, 0);
         getTerrainGrid(grid, 0, (T_PATHING_BLOCKER | T_HARMFUL_TERRAIN), (IN_FIELD_OF_VIEW | CLAIRVOYANT_VISIBLE | HAS_PLAYER | HAS_MONSTER));
@@ -988,7 +993,7 @@ boolean summonMinions(creature *summoner) {
             monst->bookkeepingFlags &= ~MB_JUST_SUMMONED;
             if (canSeeMonster(monst)) {
                 seenMinionCount++;
-                refreshDungeonCell(monst->xLoc, monst->yLoc);
+                refreshDungeonCell(monst->loc.x, monst->loc.y);
             }
             monst->ticksUntilTurn = 101;
             monst->leader = summoner;
@@ -1013,16 +1018,16 @@ boolean summonMinions(creature *summoner) {
         if (atLeastOneMinion && host) {
             host->carriedMonster = summoner;
             demoteMonsterFromLeadership(summoner);
-            refreshDungeonCell(summoner->xLoc, summoner->yLoc);
+            refreshDungeonCell(summoner->loc.x, summoner->loc.y);
         } else {
-            pmap[summoner->xLoc][summoner->yLoc].flags |= HAS_MONSTER;
+            pmap[summoner->loc.x][summoner->loc.y].flags |= HAS_MONSTER;
             // TODO: why move to the beginning?
             prependCreature(monsters, summoner);
         }
     } else if (atLeastOneMinion) {
         summoner->bookkeepingFlags |= MB_LEADER;
     }
-    createFlare(summoner->xLoc, summoner->yLoc, SUMMONING_FLASH_LIGHT);
+    createFlare(summoner->loc.x, summoner->loc.y, SUMMONING_FLASH_LIGHT);
 
     if (grid) {
         freeGrid(grid);
@@ -1052,7 +1057,7 @@ boolean getRandomMonsterSpawnLocation(short *x, short *y) {
 
     grid = allocGrid();
     fillGrid(grid, 0);
-    calculateDistances(grid, player.xLoc, player.yLoc, T_DIVIDES_LEVEL, NULL, true, true);
+    calculateDistances(grid, player.loc.x, player.loc.y, T_DIVIDES_LEVEL, NULL, true, true);
     getTerrainGrid(grid, 0, (T_PATHING_BLOCKER | T_HARMFUL_TERRAIN), (HAS_PLAYER | HAS_MONSTER | HAS_STAIRS | IN_FIELD_OF_VIEW));
     findReplaceGrid(grid, -30000, DCOLS/2-1, 0);
     findReplaceGrid(grid, 30000, 30000, 0);
@@ -1113,10 +1118,10 @@ void teleport(creature *monst, short x, short y, boolean respectTerrainAvoidance
 
     if (!coordinatesAreInMap(x, y)) {
         zeroOutGrid(monstFOV);
-        getFOVMask(monstFOV, monst->xLoc, monst->yLoc, DCOLS * FP_FACTOR, T_OBSTRUCTS_VISION, 0, false);
+        getFOVMask(monstFOV, monst->loc.x, monst->loc.y, DCOLS * FP_FACTOR, T_OBSTRUCTS_VISION, 0, false);
         grid = allocGrid();
         fillGrid(grid, 0);
-        calculateDistances(grid, monst->xLoc, monst->yLoc, forbiddenFlagsForMonster(&(monst->info)) & T_DIVIDES_LEVEL, NULL, true, false);
+        calculateDistances(grid, monst->loc.x, monst->loc.y, forbiddenFlagsForMonster(&(monst->info)) & T_DIVIDES_LEVEL, NULL, true, false);
         findReplaceGrid(grid, -30000, DCOLS/2, 0);
         findReplaceGrid(grid, 2, 30000, 1);
         if (validLocationCount(grid, 1) < 1) {
@@ -1162,8 +1167,8 @@ boolean isValidWanderDestination(creature *monst, short wpIndex) {
     return (wpIndex >= 0
             && wpIndex < rogue.wpCount
             && !monst->waypointAlreadyVisited[wpIndex]
-            && rogue.wpDistance[wpIndex][monst->xLoc][monst->yLoc] >= 0
-            && nextStep(rogue.wpDistance[wpIndex], monst->xLoc, monst->yLoc, monst, false) != NO_DIRECTION);
+            && rogue.wpDistance[wpIndex][monst->loc.x][monst->loc.y] >= 0
+            && nextStep(rogue.wpDistance[wpIndex], monst->loc.x, monst->loc.y, monst, false) != NO_DIRECTION);
 }
 
 short closestWaypointIndex(creature *monst) {
@@ -1173,9 +1178,9 @@ short closestWaypointIndex(creature *monst) {
     closestIndex = -1;
     for (i=0; i < rogue.wpCount; i++) {
         if (isValidWanderDestination(monst, i)
-            && rogue.wpDistance[i][monst->xLoc][monst->yLoc] < closestDistance) {
+            && rogue.wpDistance[i][monst->loc.x][monst->loc.y] < closestDistance) {
 
-            closestDistance = rogue.wpDistance[i][monst->xLoc][monst->yLoc];
+            closestDistance = rogue.wpDistance[i][monst->loc.x][monst->loc.y];
             closestIndex = i;
         }
     }
@@ -1273,8 +1278,8 @@ boolean monsterAvoids(creature *monst, short x, short y) {
     getLocationFlags(x, y, &tFlags, NULL, &cFlags, monst == &player);
 
     // everyone but the player avoids the stairs
-    if ((x == rogue.downLoc[0] && y == rogue.downLoc[1])
-        || (x == rogue.upLoc[0] && y == rogue.upLoc[1])) {
+    if ((x == rogue.downLoc.x && y == rogue.downLoc.y)
+        || (x == rogue.upLoc.x && y == rogue.upLoc.y)) {
 
         return monst != &player;
     }
@@ -1286,7 +1291,7 @@ boolean monsterAvoids(creature *monst, short x, short y) {
     }
 
     // non-allied monsters can always attack the player
-    if (player.xLoc == x && player.yLoc == y && monst != &player && monst->creatureState != MONSTER_ALLY) {
+    if (player.loc.x == x && player.loc.y == y && monst != &player && monst->creatureState != MONSTER_ALLY) {
         return false;
     }
 
@@ -1298,7 +1303,7 @@ boolean monsterAvoids(creature *monst, short x, short y) {
             // This is so monsters can use secret doors but won't embed themselves in secret levers.
             return false;
         }
-        if (distanceBetween(monst->xLoc, monst->yLoc, x, y) <= 1) {
+        if (distanceBetween(monst->loc.x, monst->loc.y, x, y) <= 1) {
             defender = monsterAtLoc(x, y);
             if (defender
                 && (defender->info.flags & MONST_ATTACKABLE_THRU_WALLS)) {
@@ -1310,7 +1315,7 @@ boolean monsterAvoids(creature *monst, short x, short y) {
 
     // Monsters can always attack unfriendly neighboring monsters,
     // unless it is immune to us for whatever reason.
-    if (distanceBetween(monst->xLoc, monst->yLoc, x, y) <= 1) {
+    if (distanceBetween(monst->loc.x, monst->loc.y, x, y) <= 1) {
         defender = monsterAtLoc(x, y);
         if (defender
             && !(defender->bookkeepingFlags & MB_IS_DYING)
@@ -1380,7 +1385,7 @@ boolean monsterAvoids(creature *monst, short x, short y) {
         && !(monst->info.flags & MONST_INVULNERABLE)
         && (tFlags & T_SPONTANEOUSLY_IGNITES)
         && !(cFlags & (HAS_MONSTER | HAS_PLAYER))
-        && !cellHasTerrainFlag(monst->xLoc, monst->yLoc, T_IS_FIRE | T_SPONTANEOUSLY_IGNITES)
+        && !cellHasTerrainFlag(monst->loc.x, monst->loc.y, T_IS_FIRE | T_SPONTANEOUSLY_IGNITES)
         && (monst == &player || (monst->creatureState != MONSTER_TRACKING_SCENT && monst->creatureState != MONSTER_FLEEING))) {
         return true;
     }
@@ -1404,7 +1409,7 @@ boolean monsterAvoids(creature *monst, short x, short y) {
 
     // fire
     if ((tFlags & T_IS_FIRE & ~terrainImmunities)
-        && !cellHasTerrainFlag(monst->xLoc, monst->yLoc, T_IS_FIRE)
+        && !cellHasTerrainFlag(monst->loc.x, monst->loc.y, T_IS_FIRE)
         && !(cFlags & (HAS_MONSTER | HAS_PLAYER))
         && (monst != &player || rogue.mapToShore[x][y] >= player.status[STATUS_IMMUNE_TO_FIRE])) {
         return true;
@@ -1412,7 +1417,7 @@ boolean monsterAvoids(creature *monst, short x, short y) {
 
     // non-fire harmful terrain
     if ((tFlags & T_HARMFUL_TERRAIN & ~T_IS_FIRE & ~terrainImmunities)
-        && !cellHasTerrainFlag(monst->xLoc, monst->yLoc, (T_HARMFUL_TERRAIN & ~T_IS_FIRE))) {
+        && !cellHasTerrainFlag(monst->loc.x, monst->loc.y, (T_HARMFUL_TERRAIN & ~T_IS_FIRE))) {
         return true;
     }
 
@@ -1442,13 +1447,13 @@ boolean monsterAvoids(creature *monst, short x, short y) {
     // deep water
     if ((tFlags & T_IS_DEEP_WATER & ~terrainImmunities)
         && (!(tFlags & T_ENTANGLES) || !(monst->info.flags & MONST_IMMUNE_TO_WEBS))
-        && !cellHasTerrainFlag(monst->xLoc, monst->yLoc, T_IS_DEEP_WATER)) {
+        && !cellHasTerrainFlag(monst->loc.x, monst->loc.y, T_IS_DEEP_WATER)) {
         return true; // avoid only if not already in it
     }
 
     // poisonous lichen
     if ((tFlags & T_CAUSES_POISON & ~terrainImmunities)
-        && !cellHasTerrainFlag(monst->xLoc, monst->yLoc, T_CAUSES_POISON)
+        && !cellHasTerrainFlag(monst->loc.x, monst->loc.y, T_CAUSES_POISON)
         && (monst == &player || monst->creatureState != MONSTER_TRACKING_SCENT || monst->currentHP < 10)) {
         return true;
     }
@@ -1459,8 +1464,8 @@ boolean monsterAvoids(creature *monst, short x, short y) {
         && monst->creatureState == MONSTER_TRACKING_SCENT
         && (monst->bookkeepingFlags & (MB_FOLLOWER | MB_LEADER))
         && passableArcCount(x, y) >= 2
-        && passableArcCount(monst->xLoc, monst->yLoc) < 2
-        && !cellHasTerrainFlag(monst->xLoc, monst->yLoc, (T_HARMFUL_TERRAIN & ~terrainImmunities))) {
+        && passableArcCount(monst->loc.x, monst->loc.y) < 2
+        && !cellHasTerrainFlag(monst->loc.x, monst->loc.y, (T_HARMFUL_TERRAIN & ~terrainImmunities))) {
         return true;
     }
 
@@ -1470,8 +1475,8 @@ boolean monsterAvoids(creature *monst, short x, short y) {
 boolean moveMonsterPassivelyTowards(creature *monst, short targetLoc[2], boolean willingToAttackPlayer) {
     short x, y, dx, dy, newX, newY;
 
-    x = monst->xLoc;
-    y = monst->yLoc;
+    x = monst->loc.x;
+    y = monst->loc.y;
 
     if (targetLoc[0] == x) {
         dx = 0;
@@ -1546,8 +1551,8 @@ short distanceBetween(short x1, short y1, short x2, short y2) {
 
 void alertMonster(creature *monst) {
     monst->creatureState = (monst->creatureMode == MODE_PERM_FLEEING ? MONSTER_FLEEING : MONSTER_TRACKING_SCENT);
-    monst->lastSeenPlayerAt[0] = player.xLoc;
-    monst->lastSeenPlayerAt[1] = player.yLoc;
+    monst->lastSeenPlayerAt[0] = player.loc.x;
+    monst->lastSeenPlayerAt[1] = player.loc.y;
 }
 
 void wakeUp(creature *monst) {
@@ -1595,11 +1600,11 @@ short awarenessDistance(creature *observer, creature *target) {
     // of a transparent obstruction, and may just stand motionless but hunting if there's no scent map
     // to guide them, but only as long as the player is within FOV. After that, we switch to wandering
     // and wander toward the last location that we saw the player.
-    perceivedDistance = (rogue.scentTurnNumber - scentMap[observer->xLoc][observer->yLoc]); // this value is double the apparent distance
-    if ((target == &player && (pmap[observer->xLoc][observer->yLoc].flags & IN_FIELD_OF_VIEW))
-        || (target != &player && openPathBetween(observer->xLoc, observer->yLoc, target->xLoc, target->yLoc))) {
+    perceivedDistance = (rogue.scentTurnNumber - scentMap[observer->loc.x][observer->loc.y]); // this value is double the apparent distance
+    if ((target == &player && (pmap[observer->loc.x][observer->loc.y].flags & IN_FIELD_OF_VIEW))
+        || (target != &player && openPathBetween(observer->loc.x, observer->loc.y, target->loc.x, target->loc.y))) {
 
-        perceivedDistance = min(perceivedDistance, scentDistance(observer->xLoc, observer->yLoc, target->xLoc, target->yLoc));
+        perceivedDistance = min(perceivedDistance, scentDistance(observer->loc.x, observer->loc.y, target->loc.x, target->loc.y));
     }
 
     perceivedDistance = min(perceivedDistance, 1000);
@@ -1614,7 +1619,7 @@ short awarenessDistance(creature *observer, creature *target) {
 // takes into account whether it is ALREADY aware of the target.
 boolean awareOfTarget(creature *observer, creature *target) {
     short perceivedDistance = awarenessDistance(observer, target);
-    short awareness = rogue.aggroRange * 2;
+    short awareness = rogue.stealthRange * 2;
     boolean retval;
 
     brogueAssert(perceivedDistance >= 0 && awareness >= 0);
@@ -1636,7 +1641,7 @@ boolean awareOfTarget(creature *observer, creature *target) {
             retval = true;
          }
     } else if (target == &player
-        && !(pmap[observer->xLoc][observer->yLoc].flags & IN_FIELD_OF_VIEW)) {
+        && !(pmap[observer->loc.x][observer->loc.y].flags & IN_FIELD_OF_VIEW)) {
         // observer not hunting and player-target not in field of view
         retval = false;
     } else if (perceivedDistance <= awareness) {
@@ -1676,8 +1681,8 @@ void updateMonsterState(creature *monst) {
     short x, y, closestFearedEnemy;
     boolean awareOfPlayer;
 
-    x = monst->xLoc;
-    y = monst->yLoc;
+    x = monst->loc.x;
+    y = monst->loc.y;
 
     if ((monst->info.flags & MONST_ALWAYS_HUNTING)
         && monst->creatureState != MONSTER_ALLY) {
@@ -1712,17 +1717,17 @@ void updateMonsterState(creature *monst) {
         creature *monst2 = !handledPlayer ? &player : nextCreature(&it);
         handledPlayer = true;
         if (monsterFleesFrom(monst, monst2)
-            && distanceBetween(x, y, monst2->xLoc, monst2->yLoc) < closestFearedEnemy
+            && distanceBetween(x, y, monst2->loc.x, monst2->loc.y) < closestFearedEnemy
             && traversiblePathBetween(monst2, x, y)
-            && openPathBetween(x, y, monst2->xLoc, monst2->yLoc)) {
+            && openPathBetween(x, y, monst2->loc.x, monst2->loc.y)) {
 
-            closestFearedEnemy = distanceBetween(x, y, monst2->xLoc, monst2->yLoc);
+            closestFearedEnemy = distanceBetween(x, y, monst2->loc.x, monst2->loc.y);
         }
     }
 
     if ((monst->creatureState == MONSTER_WANDERING)
         && awareOfPlayer
-        && (pmap[player.xLoc][player.yLoc].flags & IN_FIELD_OF_VIEW)) {
+        && (pmap[player.loc.x][player.loc.y].flags & IN_FIELD_OF_VIEW)) {
         // If wandering and you notice the player, start tracking the scent.
         alertMonster(monst);
     } else if (monst->creatureState == MONSTER_SLEEPING) {
@@ -1759,7 +1764,13 @@ void updateMonsterState(creature *monst) {
                && !(monst->carriedItem)) {
 
         monst->creatureMode = MODE_NORMAL;
-        alertMonster(monst);
+
+        if (monst->leader == &player) {
+            monst->creatureState = MONSTER_ALLY; // Reset state if a discorded ally steals an item and then loses it (probably in deep water)
+        } else {
+            alertMonster(monst);
+        }
+
     } else if (monst->creatureMode == MODE_NORMAL
                && monst->creatureState == MONSTER_FLEEING
                && (monst->info.flags & MONST_FLEES_NEAR_DEATH)
@@ -1777,8 +1788,8 @@ void updateMonsterState(creature *monst) {
         if (monst->creatureState == MONSTER_FLEEING
             || monst->creatureState == MONSTER_TRACKING_SCENT) {
 
-            monst->lastSeenPlayerAt[0] = player.xLoc;
-            monst->lastSeenPlayerAt[1] = player.yLoc;
+            monst->lastSeenPlayerAt[0] = player.loc.x;
+            monst->lastSeenPlayerAt[1] = player.loc.y;
         }
     }
 }
@@ -1881,7 +1892,7 @@ void decrementMonsterStatus(creature *monst) {
                 }
                 break;
             case STATUS_STUCK:
-                if (monst->status[i] && !cellHasTerrainFlag(monst->xLoc, monst->yLoc, T_ENTANGLES)) {
+                if (monst->status[i] && !cellHasTerrainFlag(monst->loc.x, monst->loc.y, T_ENTANGLES)) {
                     monst->status[i] = 0;
                 }
                 break;
@@ -1920,9 +1931,9 @@ void decrementMonsterStatus(creature *monst) {
                 if (monst->status[i]
                     && !(monst->info.flags & MONST_INVISIBLE)
                     && !--monst->status[i]
-                    && playerCanSee(monst->xLoc, monst->yLoc)) {
+                    && playerCanSee(monst->loc.x, monst->loc.y)) {
 
-                    refreshDungeonCell(monst->xLoc, monst->yLoc);
+                    refreshDungeonCell(monst->loc.x, monst->loc.y);
                 }
                 break;
             default:
@@ -1942,7 +1953,7 @@ void decrementMonsterStatus(creature *monst) {
 
                 monst->creatureState = MONSTER_TRACKING_SCENT;
             }
-            refreshDungeonCell(monst->xLoc, monst->yLoc);
+            refreshDungeonCell(monst->loc.x, monst->loc.y);
         } else if (monst->info.flags & (MONST_RESTRICTED_TO_LIQUID)
                    && monst->creatureState != MONSTER_ALLY) {
             monst->creatureState = MONSTER_FLEEING;
@@ -1951,16 +1962,16 @@ void decrementMonsterStatus(creature *monst) {
 }
 
 boolean traversiblePathBetween(creature *monst, short x2, short y2) {
-    short coords[DCOLS][2], i, x, y, n;
-    short originLoc[2] = {monst->xLoc, monst->yLoc};
-    short targetLoc[2] = {x2, y2};
+    pos originLoc = monst->loc;
+    pos targetLoc = (pos){ .x = x2, .y = y2 };
 
     // Using BOLT_NONE here to favor a path that avoids obstacles to one that hits them
-    n = getLineCoordinates(coords, originLoc, targetLoc, &boltCatalog[BOLT_NONE]);
+    pos coords[DCOLS];
+    int n = getLineCoordinates(coords, originLoc, targetLoc, &boltCatalog[BOLT_NONE]);
 
-    for (i=0; i<n; i++) {
-        x = coords[i][0];
-        y = coords[i][1];
+    for (int i=0; i<n; i++) {
+        short x = coords[i].x;
+        short y = coords[i].y;
         if (x == x2 && y == y2) {
             return true;
         }
@@ -1974,14 +1985,14 @@ boolean traversiblePathBetween(creature *monst, short x2, short y2) {
 
 boolean specifiedPathBetween(short x1, short y1, short x2, short y2,
                              unsigned long blockingTerrain, unsigned long blockingFlags) {
-    short coords[DCOLS][2], i, x, y, n;
-    short originLoc[2] = {x1, y1};
-    short targetLoc[2] = {x2, y2};
-    n = getLineCoordinates(coords, originLoc, targetLoc, &boltCatalog[BOLT_NONE]);
+    pos originLoc = (pos){ .x = x1, .y = y1 };
+    pos targetLoc = (pos){ .x = x2, .y = y2 };
+    pos coords[DCOLS];
+    int n = getLineCoordinates(coords, originLoc, targetLoc, &boltCatalog[BOLT_NONE]);
 
-    for (i=0; i<n; i++) {
-        x = coords[i][0];
-        y = coords[i][1];
+    for (int i=0; i<n; i++) {
+        short x = coords[i].x;
+        short y = coords[i].y;
         if (cellHasTerrainFlag(x, y, blockingTerrain) || (pmap[x][y].flags & blockingFlags)) {
             return false;
         }
@@ -1994,10 +2005,12 @@ boolean specifiedPathBetween(short x1, short y1, short x2, short y2,
 }
 
 boolean openPathBetween(short x1, short y1, short x2, short y2) {
-    short returnLoc[2], startLoc[2] = {x1, y1}, targetLoc[2] = {x2, y2};
+    pos startLoc = (pos){ .x = x1, .y = y1 };
+    pos targetLoc = (pos){ .x = x2, .y = y2 };
 
-    getImpactLoc(returnLoc, startLoc, targetLoc, DCOLS, false, &boltCatalog[BOLT_NONE]);
-    if (returnLoc[0] == targetLoc[0] && returnLoc[1] == targetLoc[1]) {
+    pos returnLoc;
+    getImpactLoc(&returnLoc, startLoc, targetLoc, DCOLS, false, &boltCatalog[BOLT_NONE]);
+    if (returnLoc.x == targetLoc.x && returnLoc.y == targetLoc.y) {
         return true;
     }
     return false;
@@ -2008,12 +2021,12 @@ creature *monsterAtLoc(short x, short y) {
     if (!(pmap[x][y].flags & (HAS_MONSTER | HAS_PLAYER))) {
         return NULL;
     }
-    if (player.xLoc == x && player.yLoc == y) {
+    if (player.loc.x == x && player.loc.y == y) {
         return &player;
     }
     for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
         creature *monst = nextCreature(&it);
-        if (monst->xLoc == x && monst->yLoc == y) {
+        if (monst->loc.x == x && monst->loc.y == y) {
             return monst;
         }
     }
@@ -2030,7 +2043,7 @@ creature *dormantMonsterAtLoc(short x, short y) {
 
     for (creatureIterator it = iterateCreatures(dormantMonsters); hasNextCreature(it);) {
         creature *monst = nextCreature(&it);
-        if (monst->xLoc == x && monst->yLoc == y) {
+        if (monst->loc.x == x && monst->loc.y == y) {
             return monst;
         }
     }
@@ -2053,12 +2066,12 @@ enum boltType monsterHasBoltEffect(creature *monst, enum boltEffects boltEffectI
 void pathTowardCreature(creature *monst, creature *target) {
     short targetLoc[2], dir;
 
-    if (traversiblePathBetween(monst, target->xLoc, target->yLoc)) {
-        if (distanceBetween(monst->xLoc, monst->yLoc, target->xLoc, target->yLoc) <= 2) {
+    if (traversiblePathBetween(monst, target->loc.x, target->loc.y)) {
+        if (distanceBetween(monst->loc.x, monst->loc.y, target->loc.x, target->loc.y) <= 2) {
             monst->bookkeepingFlags &= ~MB_GIVEN_UP_ON_SCENT;
         }
-        targetLoc[0] = target->xLoc;
-        targetLoc[1] = target->yLoc;
+        targetLoc[0] = target->loc.x;
+        targetLoc[1] = target->loc.y;
         moveMonsterPassivelyTowards(monst, targetLoc, (monst->creatureState != MONSTER_ALLY));
         return;
     }
@@ -2067,17 +2080,17 @@ void pathTowardCreature(creature *monst, creature *target) {
     if (!target->mapToMe) {
         target->mapToMe = allocGrid();
         fillGrid(target->mapToMe, 0);
-        calculateDistances(target->mapToMe, target->xLoc, target->yLoc, 0, monst, true, false);
+        calculateDistances(target->mapToMe, target->loc.x, target->loc.y, 0, monst, true, false);
     }
 
     // is the target map out of date?
-    if (target->mapToMe[target->xLoc][target->yLoc] > 3) {
+    if (target->mapToMe[target->loc.x][target->loc.y] > 3) {
         // it is. recalculate the map.
-        calculateDistances(target->mapToMe, target->xLoc, target->yLoc, 0, monst, true, false);
+        calculateDistances(target->mapToMe, target->loc.x, target->loc.y, 0, monst, true, false);
     }
 
     // blink to the target?
-    if (distanceBetween(monst->xLoc, monst->yLoc, target->xLoc, target->yLoc) > 10
+    if (distanceBetween(monst->loc.x, monst->loc.y, target->loc.x, target->loc.y) > 10
         || monstersAreEnemies(monst, target)) {
 
         if (monsterBlinkToPreferenceMap(monst, target->mapToMe, false)) { // if it blinked
@@ -2087,15 +2100,15 @@ void pathTowardCreature(creature *monst, creature *target) {
     }
 
     // follow the map.
-    dir = nextStep(target->mapToMe, monst->xLoc, monst->yLoc, monst, true);
+    dir = nextStep(target->mapToMe, monst->loc.x, monst->loc.y, monst, true);
     if (dir == NO_DIRECTION) {
-        dir = randValidDirectionFrom(monst, monst->xLoc, monst->yLoc, true);
+        dir = randValidDirectionFrom(monst, monst->loc.x, monst->loc.y, true);
     }
     if (dir == NO_DIRECTION) {
         return; // monster is blocked
     }
-    targetLoc[0] = monst->xLoc + nbDirs[dir][0];
-    targetLoc[1] = monst->yLoc + nbDirs[dir][1];
+    targetLoc[0] = monst->loc.x + nbDirs[dir][0];
+    targetLoc[1] = monst->loc.y + nbDirs[dir][1];
 
     moveMonsterPassivelyTowards(monst, targetLoc, (monst->creatureState != MONSTER_ALLY));
 }
@@ -2136,8 +2149,8 @@ enum directions monsterSwarmDirection(creature *monst, creature *enemy) {
         return NO_DIRECTION;
     }
 
-    if (distanceBetween(monst->xLoc, monst->yLoc, enemy->xLoc, enemy->yLoc) != 1
-        || (diagonalBlocked(monst->xLoc, monst->yLoc, enemy->xLoc, enemy->yLoc, false) || (enemy->info.flags & MONST_ATTACKABLE_THRU_WALLS))
+    if (distanceBetween(monst->loc.x, monst->loc.y, enemy->loc.x, enemy->loc.y) != 1
+        || (diagonalBlocked(monst->loc.x, monst->loc.y, enemy->loc.x, enemy->loc.y, false) || (enemy->info.flags & MONST_ATTACKABLE_THRU_WALLS))
         || !monstersAreEnemies(monst, enemy)) {
 
         return NO_DIRECTION; // Too far from the enemy, diagonally blocked, or not enemies with it.
@@ -2149,13 +2162,13 @@ enum directions monsterSwarmDirection(creature *monst, creature *enemy) {
     shuffleList(&(dirList[4]), 4);
     for (i=0; i<8 && targetDir == NO_DIRECTION; i++) {
         dir = dirList[i];
-        newX = monst->xLoc + nbDirs[dir][0];
-        newY = monst->yLoc + nbDirs[dir][1];
+        newX = monst->loc.x + nbDirs[dir][0];
+        newY = monst->loc.y + nbDirs[dir][1];
         if (coordinatesAreInMap(newX, newY)
-            && distanceBetween(enemy->xLoc, enemy->yLoc, newX, newY) == 1
+            && distanceBetween(enemy->loc.x, enemy->loc.y, newX, newY) == 1
             && !(pmap[newX][newY].flags & (HAS_PLAYER | HAS_MONSTER))
-            && !diagonalBlocked(monst->xLoc, monst->yLoc, newX, newY, false)
-            && (!diagonalBlocked(enemy->xLoc, enemy->yLoc, newX, newY, false) || (enemy->info.flags & MONST_ATTACKABLE_THRU_WALLS))
+            && !diagonalBlocked(monst->loc.x, monst->loc.y, newX, newY, false)
+            && (!diagonalBlocked(enemy->loc.x, enemy->loc.y, newX, newY, false) || (enemy->info.flags & MONST_ATTACKABLE_THRU_WALLS))
             && !monsterAvoids(monst, newX, newY)) {
 
             targetDir = dir;
@@ -2176,22 +2189,22 @@ enum directions monsterSwarmDirection(creature *monst, creature *enemy) {
             && monstersAreTeammates(monst, ally)
             && monstersAreEnemies(ally, enemy)
             && creatureEligibleForSwarming(ally)
-            && distanceBetween(monst->xLoc, monst->yLoc, ally->xLoc, ally->yLoc) == 1
-            && !diagonalBlocked(monst->xLoc, monst->yLoc, ally->xLoc, ally->yLoc, false)
-            && !monsterAvoids(ally, monst->xLoc, monst->yLoc)
-            && (distanceBetween(enemy->xLoc, enemy->yLoc, ally->xLoc, ally->yLoc) > 1 || diagonalBlocked(enemy->xLoc, enemy->yLoc, ally->xLoc, ally->yLoc, false))) {
+            && distanceBetween(monst->loc.x, monst->loc.y, ally->loc.x, ally->loc.y) == 1
+            && !diagonalBlocked(monst->loc.x, monst->loc.y, ally->loc.x, ally->loc.y, false)
+            && !monsterAvoids(ally, monst->loc.x, monst->loc.y)
+            && (distanceBetween(enemy->loc.x, enemy->loc.y, ally->loc.x, ally->loc.y) > 1 || diagonalBlocked(enemy->loc.x, enemy->loc.y, ally->loc.x, ally->loc.y, false))) {
 
             // Found a prospective ally.
             // Check that there isn't already an open space from which to attack the enemy that is accessible to the ally.
             alternateDirectionExists = false;
             for (dir=0; dir< DIRECTION_COUNT && !alternateDirectionExists; dir++) {
-                newX = ally->xLoc + nbDirs[dir][0];
-                newY = ally->yLoc + nbDirs[dir][1];
+                newX = ally->loc.x + nbDirs[dir][0];
+                newY = ally->loc.y + nbDirs[dir][1];
                 if (coordinatesAreInMap(newX, newY)
                     && !(pmap[newX][newY].flags & (HAS_PLAYER | HAS_MONSTER))
-                    && distanceBetween(enemy->xLoc, enemy->yLoc, newX, newY) == 1
-                    && !diagonalBlocked(enemy->xLoc, enemy->yLoc, newX, newY, false)
-                    && !diagonalBlocked(ally->xLoc, ally->yLoc, newX, newY, false)
+                    && distanceBetween(enemy->loc.x, enemy->loc.y, newX, newY) == 1
+                    && !diagonalBlocked(enemy->loc.x, enemy->loc.y, newX, newY, false)
+                    && !diagonalBlocked(ally->loc.x, ally->loc.y, newX, newY, false)
                     && !monsterAvoids(ally, newX, newY)) {
 
                     alternateDirectionExists = true;
@@ -2209,8 +2222,8 @@ enum directions monsterSwarmDirection(creature *monst, creature *enemy) {
                         && monst != otherEnemy
                         && enemy != otherEnemy
                         && monstersAreEnemies(ally, otherEnemy)
-                        && distanceBetween(ally->xLoc, ally->yLoc, otherEnemy->xLoc, otherEnemy->yLoc) == 1
-                        && (!diagonalBlocked(ally->xLoc, ally->yLoc, otherEnemy->xLoc, otherEnemy->yLoc, false) || (otherEnemy->info.flags & MONST_ATTACKABLE_THRU_WALLS))) {
+                        && distanceBetween(ally->loc.x, ally->loc.y, otherEnemy->loc.x, otherEnemy->loc.y) == 1
+                        && (!diagonalBlocked(ally->loc.x, ally->loc.y, otherEnemy->loc.x, otherEnemy->loc.y, false) || (otherEnemy->info.flags & MONST_ATTACKABLE_THRU_WALLS))) {
 
                         foundConflict = true;
                         break; // Ally is already occupied.
@@ -2229,22 +2242,30 @@ enum directions monsterSwarmDirection(creature *monst, creature *enemy) {
 // Isomorphs a number in [0, 39] to coordinates along the square of radius 5 surrounding (0,0).
 // This is used as the sample space for bolt target coordinates, e.g. when reflecting or when
 // monsters are deciding where to blink.
-void perimeterCoords(short returnCoords[2], short n) {
+pos perimeterCoords(short n) {
     if (n <= 10) {          // top edge, left to right
-        returnCoords[0] = n - 5;
-        returnCoords[1] = -5;
+        return (pos){
+            .x = n - 5,
+            .y = -5
+        };
     } else if (n <= 21) {   // bottom edge, left to right
-        returnCoords[0] = (n - 11) - 5;
-        returnCoords[1] = 5;
+        return (pos){
+            .x = (n - 11) - 5,
+            .y = 5
+        };
     } else if (n <= 30) {   // left edge, top to bottom
-        returnCoords[0] = -5;
-        returnCoords[1] = (n - 22) - 4;
+        return (pos){
+            .x = -5,
+            .y = (n - 22) - 4
+        };
     } else if (n <= 39) {   // right edge, top to bottom
-        returnCoords[0] = 5;
-        returnCoords[1] = (n - 31) - 4;
+        return (pos){
+            .x = 5,
+            .y = (n - 31) - 4
+        };
     } else {
         message("ERROR! Bad perimeter coordinate request!", REQUIRE_ACKNOWLEDGMENT);
-        returnCoords[0] = returnCoords[1] = 0; // garbage in, garbage out
+        return (pos){ .x = 0, .y = 0 }; // garbage in, garbage out
     }
 }
 
@@ -2252,7 +2273,7 @@ void perimeterCoords(short returnCoords[2], short n) {
 // preferenceMap argument. "blinkUphill" determines whether it's aiming for higher or lower numbers on
 // the preference map -- true means higher. Returns true if the monster blinked; false if it didn't.
 boolean monsterBlinkToPreferenceMap(creature *monst, short **preferenceMap, boolean blinkUphill) {
-    short i, bestTarget[2], bestPreference, nowPreference, maxDistance, target[2], impact[2], origin[2];
+    short i, nowPreference, maxDistance;
     boolean gotOne;
     char monstName[DCOLS];
     char buf[DCOLS];
@@ -2267,43 +2288,41 @@ boolean monsterBlinkToPreferenceMap(creature *monst, short **preferenceMap, bool
     maxDistance = staffBlinkDistance(5 * FP_FACTOR);
     gotOne = false;
 
-    origin[0] = monst->xLoc;
-    origin[1] = monst->yLoc;
-
-    bestTarget[0]   = 0;
-    bestTarget[1]   = 0;
-    bestPreference  = preferenceMap[monst->xLoc][monst->yLoc];
+    pos origin = monst->loc;
+    pos bestTarget = (pos){ .x = 0, .y = 0 };
+    short bestPreference = preferenceMap[monst->loc.x][monst->loc.y];
 
     // make sure that we beat the four cardinal neighbors
     for (i = 0; i < 4; i++) {
-        nowPreference = preferenceMap[monst->xLoc + nbDirs[i][0]][monst->yLoc + nbDirs[i][1]];
+        nowPreference = preferenceMap[monst->loc.x + nbDirs[i][0]][monst->loc.y + nbDirs[i][1]];
 
         if (((blinkUphill && nowPreference > bestPreference) || (!blinkUphill && nowPreference < bestPreference))
-            && !monsterAvoids(monst, monst->xLoc + nbDirs[i][0], monst->yLoc + nbDirs[i][1])) {
+            && !monsterAvoids(monst, monst->loc.x + nbDirs[i][0], monst->loc.y + nbDirs[i][1])) {
 
             bestPreference = nowPreference;
         }
     }
 
     for (i=0; i<40; i++) {
-        perimeterCoords(target, i);
-        target[0] += monst->xLoc;
-        target[1] += monst->yLoc;
+        pos target = perimeterCoords(i);
+        target.x += monst->loc.x;
+        target.y += monst->loc.y;
 
-        getImpactLoc(impact, origin, target, maxDistance, true, &boltCatalog[BOLT_BLINKING]);
-        nowPreference = preferenceMap[impact[0]][impact[1]];
+        pos impact;
+        getImpactLoc(&impact, origin, target, maxDistance, true, &boltCatalog[BOLT_BLINKING]);
+        nowPreference = preferenceMap[impact.x][impact.y];
 
         if (((blinkUphill && (nowPreference > bestPreference))
              || (!blinkUphill && (nowPreference < bestPreference)))
-            && !monsterAvoids(monst, impact[0], impact[1])) {
+            && !monsterAvoids(monst, impact.x, impact.y)) {
 
-            bestTarget[0]   = target[0];
-            bestTarget[1]   = target[1];
+            bestTarget = target;
             bestPreference  = nowPreference;
 
-            if ((abs(impact[0] - origin[0]) > 1 || abs(impact[1] - origin[1]) > 1)
-                || (cellHasTerrainFlag(impact[0], origin[1], T_OBSTRUCTS_PASSABILITY))
-                || (cellHasTerrainFlag(origin[0], impact[1], T_OBSTRUCTS_PASSABILITY))) {
+            if ((abs(impact.x - origin.x) > 1 || abs(impact.y - origin.y) > 1)
+                // Note: these are deliberately backwards:
+                || (cellHasTerrainFlag(impact.x, origin.y, T_OBSTRUCTS_PASSABILITY))
+                || (cellHasTerrainFlag(origin.x, impact.y, T_OBSTRUCTS_PASSABILITY))) {
                 gotOne = true;
             } else {
                 gotOne = false;
@@ -2327,9 +2346,9 @@ boolean monsterBlinkToPreferenceMap(creature *monst, short **preferenceMap, bool
 
 boolean fleeingMonsterAwareOfPlayer(creature *monst) {
     if (player.status[STATUS_INVISIBLE]) {
-        return (distanceBetween(monst->xLoc, monst->yLoc, player.xLoc, player.yLoc) <= 1);
+        return (distanceBetween(monst->loc.x, monst->loc.y, player.loc.x, player.loc.y) <= 1);
     } else {
-        return (pmap[monst->xLoc][monst->yLoc].flags & IN_FIELD_OF_VIEW) ? true : false;
+        return (pmap[monst->loc.x][monst->loc.y].flags & IN_FIELD_OF_VIEW) ? true : false;
     }
 }
 
@@ -2450,7 +2469,7 @@ boolean generallyValidBoltTarget(creature *caster, creature *target) {
         // No bolt will affect a submerged creature. Can't shoot at invisible creatures unless it's in gas.
         return false;
     }
-    return openPathBetween(caster->xLoc, caster->yLoc, target->xLoc, target->yLoc);
+    return openPathBetween(caster->loc.x, caster->loc.y, target->loc.x, target->loc.y);
 }
 
 boolean targetEligibleForCombatBuff(creature *caster, creature *target) {
@@ -2462,7 +2481,7 @@ boolean targetEligibleForCombatBuff(creature *caster, creature *target) {
                 handledPlayer = true;
                 if (monstersAreEnemies(&player, enemy)
                     && canSeeMonster(enemy)
-                    && (pmap[enemy->xLoc][enemy->yLoc].flags & IN_FIELD_OF_VIEW)) {
+                    && (pmap[enemy->loc.x][enemy->loc.y].flags & IN_FIELD_OF_VIEW)) {
 
                     return true;
                 }
@@ -2509,7 +2528,7 @@ boolean specificallyValidBoltTarget(creature *caster, creature *target, enum bol
         return false;
     }
     if ((boltCatalog[theBoltType].flags & BF_FIERY)
-        && burnedTerrainFlagsAtLoc(caster->xLoc, caster->yLoc) & avoidedFlagsForMonster(&(caster->info))) {
+        && burnedTerrainFlagsAtLoc(caster->loc.x, caster->loc.y) & avoidedFlagsForMonster(&(caster->info))) {
         // Don't shoot fireballs if you're standing on a tile that could combust into something that harms you.
         return false;
     }
@@ -2517,12 +2536,12 @@ boolean specificallyValidBoltTarget(creature *caster, creature *target, enum bol
     // Rules specific to bolt effects:
     switch (boltCatalog[theBoltType].boltEffect) {
         case BE_BECKONING:
-            if (distanceBetween(caster->xLoc, caster->yLoc, target->xLoc, target->yLoc) <= 1) {
+            if (distanceBetween(caster->loc.x, caster->loc.y, target->loc.x, target->loc.y) <= 1) {
                 return false;
             }
             break;
         case BE_ATTACK:
-            if (cellHasTerrainFlag(target->xLoc, target->yLoc, T_OBSTRUCTS_PASSABILITY)
+            if (cellHasTerrainFlag(target->loc.x, target->loc.y, T_OBSTRUCTS_PASSABILITY)
                 && !(target->info.flags & MONST_ATTACKABLE_THRU_WALLS)) {
                 // Don't shoot an arrow at an embedded creature.
                 return false;
@@ -2572,7 +2591,7 @@ boolean specificallyValidBoltTarget(creature *caster, creature *target, enum bol
                     return true;
                 }
                 if ((target->status[STATUS_IMMUNE_TO_FIRE] || target->status[STATUS_LEVITATING])
-                    && cellHasTerrainFlag(target->xLoc, target->yLoc, (T_LAVA_INSTA_DEATH | T_IS_DEEP_WATER | T_AUTO_DESCENT))) {
+                    && cellHasTerrainFlag(target->loc.x, target->loc.y, (T_LAVA_INSTA_DEATH | T_IS_DEEP_WATER | T_AUTO_DESCENT))) {
                     // Drop the target into lava or a chasm if opportunity knocks.
                     return true;
                 }
@@ -2645,7 +2664,6 @@ boolean specificallyValidBoltTarget(creature *caster, creature *target, enum bol
 
 void monsterCastSpell(creature *caster, creature *target, enum boltType boltIndex) {
     bolt theBolt;
-    short originLoc[2], targetLoc[2];
     char buf[200], monstName[100];
 
     if (canDirectlySeeMonster(caster)) {
@@ -2656,10 +2674,8 @@ void monsterCastSpell(creature *caster, creature *target, enum boltType boltInde
     }
 
     theBolt = boltCatalog[boltIndex];
-    originLoc[0] = caster->xLoc;
-    originLoc[1] = caster->yLoc;
-    targetLoc[0] = target->xLoc;
-    targetLoc[1] = target->yLoc;
+    pos originLoc = caster->loc;
+    pos targetLoc = target->loc;
     zap(originLoc, targetLoc, &theBolt, false);
 
     if (player.currentHP <= 0) {
@@ -2736,8 +2752,8 @@ enum directions scentDirection(creature *monst) {
     boolean canTryAgain = true;
     creature *otherMonst;
 
-    x = monst->xLoc;
-    y = monst->yLoc;
+    x = monst->loc.x;
+    y = monst->loc.y;
 
     for (;;) {
 
@@ -2786,33 +2802,46 @@ enum directions scentDirection(creature *monst) {
 
 // returns true if the resurrection was successful.
 boolean resurrectAlly(const short x, const short y) {
-    boolean success;
-    creature *monst = firstCreature(&purgatory);
-    if (monst) {
-        // Remove from purgatory and insert into the mortal plane.
-        removeCreature(&purgatory, monst);
-        prependCreature(monsters, monst);
+    creatureIterator allyIterator = iterateCreatures(&purgatory);
 
-        getQualifyingPathLocNear(&monst->xLoc, &monst->yLoc, x, y, true,
+    // Prefer most empowered ally.  In case of tie, prefer ally with greatest monsterID (thus
+    // preferring allies found deeper in the dungeon over ones found higher up and preferring
+    // legendary allies over everyone else).
+    creature *monToCheck, *monToRaise = NULL;
+    while (monToCheck = nextCreature(&allyIterator)) {
+        if (monToRaise == NULL
+            || monToCheck->totalPowerCount > monToRaise->totalPowerCount
+            || (monToCheck->totalPowerCount == monToRaise->totalPowerCount
+                && monToCheck->info.monsterID > monToRaise->info.monsterID)) {
+
+            monToRaise = monToCheck;
+        }
+    }
+
+    if (monToRaise) {
+        // Remove from purgatory and insert into the mortal plane.
+        removeCreature(&purgatory, monToRaise);
+        prependCreature(monsters, monToRaise);
+
+        getQualifyingPathLocNear(&monToRaise->loc.x, &monToRaise->loc.y, x, y, true,
                                  (T_PATHING_BLOCKER | T_HARMFUL_TERRAIN), 0,
                                  0, (HAS_PLAYER | HAS_MONSTER), false);
-        pmap[monst->xLoc][monst->yLoc].flags |= HAS_MONSTER;
+        pmap[monToRaise->loc.x][monToRaise->loc.y].flags |= HAS_MONSTER;
 
         // Restore health etc.
-        monst->bookkeepingFlags &= ~(MB_IS_DYING | MB_IS_FALLING);
-        if (!(monst->info.flags & MONST_FIERY)
-            && monst->status[STATUS_BURNING]) {
+        monToRaise->bookkeepingFlags &= ~(MB_IS_DYING | MB_ADMINISTRATIVE_DEATH | MB_HAS_DIED | MB_IS_FALLING);
+        if (!(monToRaise->info.flags & MONST_FIERY)
+            && monToRaise->status[STATUS_BURNING]) {
 
-            monst->status[STATUS_BURNING] = 0;
+            monToRaise->status[STATUS_BURNING] = 0;
         }
-        monst->status[STATUS_DISCORDANT] = 0;
-        heal(monst, 100, true);
+        monToRaise->status[STATUS_DISCORDANT] = 0;
+        heal(monToRaise, 100, true);
 
-        success = true;
+        return true;
     } else {
-        success = false;
+        return false;
     }
-    return success;
 }
 
 void unAlly(creature *monst) {
@@ -2824,14 +2853,14 @@ void unAlly(creature *monst) {
 }
 
 boolean monsterFleesFrom(creature *monst, creature *defender) {
-    const short x = monst->xLoc;
-    const short y = monst->yLoc;
+    const short x = monst->loc.x;
+    const short y = monst->loc.y;
 
     if (!monsterWillAttackTarget(defender, monst)) {
         return false;
     }
 
-    if (distanceBetween(x, y, defender->xLoc, defender->yLoc) >= 4) {
+    if (distanceBetween(x, y, defender->loc.x, defender->loc.y) >= 4) {
         return false;
     }
 
@@ -2865,8 +2894,8 @@ boolean monsterFleesFrom(creature *monst, creature *defender) {
 }
 
 boolean allyFlees(creature *ally, creature *closestEnemy) {
-    const short x = ally->xLoc;
-    const short y = ally->yLoc;
+    const short x = ally->loc.x;
+    const short y = ally->loc.y;
 
     if (!closestEnemy) {
         return false; // No one to flee from.
@@ -2876,7 +2905,7 @@ boolean allyFlees(creature *ally, creature *closestEnemy) {
         return false;
     }
 
-    if (distanceBetween(x, y, closestEnemy->xLoc, closestEnemy->yLoc) < 10
+    if (distanceBetween(x, y, closestEnemy->loc.x, closestEnemy->loc.y) < 10
         && (100 * ally->currentHP / ally->info.maxHP <= 33)
         && ally->info.turnsBetweenRegen > 0
         && !ally->carriedMonster
@@ -2899,8 +2928,8 @@ void monsterMillAbout(creature *monst, short movementChance) {
     enum directions dir;
     short targetLoc[2];
 
-    const short x = monst->xLoc;
-    const short y = monst->yLoc;
+    const short x = monst->loc.x;
+    const short y = monst->loc.y;
 
     if (rand_percent(movementChance)) {
         dir = randValidDirectionFrom(monst, x, y, true);
@@ -2918,8 +2947,8 @@ void moveAlly(creature *monst) {
     short **enemyMap, **costMap;
     char buf[DCOLS], monstName[DCOLS];
 
-    x = monst->xLoc;
-    y = monst->yLoc;
+    x = monst->loc.x;
+    y = monst->loc.y;
 
     targetLoc[0] = targetLoc[1] = 0;
 
@@ -2959,12 +2988,12 @@ void moveAlly(creature *monst) {
         if (target != monst
             && (!(target->bookkeepingFlags & MB_SUBMERGED) || (monst->bookkeepingFlags & MB_SUBMERGED))
             && monsterWillAttackTarget(monst, target)
-            && distanceBetween(x, y, target->xLoc, target->yLoc) < shortestDistance
-            && traversiblePathBetween(monst, target->xLoc, target->yLoc)
-            && (!cellHasTerrainFlag(target->xLoc, target->yLoc, T_OBSTRUCTS_PASSABILITY) || (target->info.flags & MONST_ATTACKABLE_THRU_WALLS))
+            && distanceBetween(x, y, target->loc.x, target->loc.y) < shortestDistance
+            && traversiblePathBetween(monst, target->loc.x, target->loc.y)
+            && (!cellHasTerrainFlag(target->loc.x, target->loc.y, T_OBSTRUCTS_PASSABILITY) || (target->info.flags & MONST_ATTACKABLE_THRU_WALLS))
             && (!target->status[STATUS_INVISIBLE] || rand_percent(33))) {
 
-            shortestDistance = distanceBetween(x, y, target->xLoc, target->yLoc);
+            shortestDistance = distanceBetween(x, y, target->loc.x, target->loc.y);
             closestMonster = target;
         }
     }
@@ -2983,7 +3012,7 @@ void moveAlly(creature *monst) {
         if (!rogue.updatedAllySafetyMapThisTurn) {
             updateAllySafetyMap();
         }
-        dir = nextStep(allySafetyMap, monst->xLoc, monst->yLoc, monst, true);
+        dir = nextStep(allySafetyMap, monst->loc.x, monst->loc.y, monst, true);
         if (dir != -1) {
             targetLoc[0] = x + nbDirs[dir][0];
             targetLoc[1] = y + nbDirs[dir][1];
@@ -3022,7 +3051,7 @@ void moveAlly(creature *monst) {
     }
 
     if (closestMonster
-        && (distanceBetween(x, y, player.xLoc, player.yLoc) < leashLength || (monst->bookkeepingFlags & MB_DOES_NOT_TRACK_LEADER))
+        && (distanceBetween(x, y, player.loc.x, player.loc.y) < leashLength || (monst->bookkeepingFlags & MB_DOES_NOT_TRACK_LEADER))
         && !(monst->info.flags & MONST_MAINTAINS_DISTANCE)
         && !attackWouldBeFutile(monst, closestMonster)) {
 
@@ -3053,13 +3082,13 @@ void moveAlly(creature *monst) {
                 if (target != monst
                     && (!(target->bookkeepingFlags & MB_SUBMERGED) || (monst->bookkeepingFlags & MB_SUBMERGED))
                     && monsterWillAttackTarget(monst, target)
-                    && distanceBetween(x, y, target->xLoc, target->yLoc) < shortestDistance
-                    && traversiblePathBetween(monst, target->xLoc, target->yLoc)
-                    && (!monsterAvoids(monst, target->xLoc, target->yLoc) || (target->info.flags & MONST_ATTACKABLE_THRU_WALLS))
+                    && distanceBetween(x, y, target->loc.x, target->loc.y) < shortestDistance
+                    && traversiblePathBetween(monst, target->loc.x, target->loc.y)
+                    && (!monsterAvoids(monst, target->loc.x, target->loc.y) || (target->info.flags & MONST_ATTACKABLE_THRU_WALLS))
                     && (!target->status[STATUS_INVISIBLE] || ((monst->info.flags & MONST_ALWAYS_USE_ABILITY) || rand_percent(33)))) {
 
-                    enemyMap[target->xLoc][target->yLoc] = 0;
-                    costMap[target->xLoc][target->yLoc] = 1;
+                    enemyMap[target->loc.x][target->loc.y] = 0;
+                    costMap[target->loc.x][target->loc.y] = 1;
                 }
             }
 
@@ -3074,15 +3103,15 @@ void moveAlly(creature *monst) {
             freeGrid(enemyMap);
         }
 
-        targetLoc[0] = closestMonster->xLoc;
-        targetLoc[1] = closestMonster->yLoc;
+        targetLoc[0] = closestMonster->loc.x;
+        targetLoc[1] = closestMonster->loc.y;
         moveMonsterPassivelyTowards(monst, targetLoc, false);
     } else if (monst->targetCorpseLoc[0]
                && !monst->status[STATUS_POISONED]
                && (!monst->status[STATUS_BURNING] || monst->status[STATUS_IMMUNE_TO_FIRE])) { // Going to start eating a corpse.
         moveMonsterPassivelyTowards(monst, monst->targetCorpseLoc, false);
-        if (monst->xLoc == monst->targetCorpseLoc[0]
-            && monst->yLoc == monst->targetCorpseLoc[1]
+        if (monst->loc.x == monst->targetCorpseLoc[0]
+            && monst->loc.y == monst->targetCorpseLoc[1]
             && !(monst->bookkeepingFlags & MB_ABSORBING)) {
             if (canSeeMonster(monst)) {
                 monsterName(monstName, monst, true);
@@ -3093,13 +3122,13 @@ void moveAlly(creature *monst) {
             monst->bookkeepingFlags |= MB_ABSORBING;
         }
     } else if ((monst->bookkeepingFlags & MB_DOES_NOT_TRACK_LEADER)
-               || (distanceBetween(x, y, player.xLoc, player.yLoc) < 3 && (pmap[x][y].flags & IN_FIELD_OF_VIEW))) {
+               || (distanceBetween(x, y, player.loc.x, player.loc.y) < 3 && (pmap[x][y].flags & IN_FIELD_OF_VIEW))) {
 
         monst->bookkeepingFlags &= ~MB_GIVEN_UP_ON_SCENT;
         monsterMillAbout(monst, 30);
     } else {
         if (!(monst->bookkeepingFlags & MB_GIVEN_UP_ON_SCENT)
-            && distanceBetween(x, y, player.xLoc, player.yLoc) > 10
+            && distanceBetween(x, y, player.loc.x, player.loc.y) > 10
             && monsterBlinkToPreferenceMap(monst, scentMap, true)) {
 
             monst->ticksUntilTurn = monst->attackSpeed * (monst->info.flags & MONST_CAST_SPELLS_SLOWLY ? 2 : 1);
@@ -3122,8 +3151,8 @@ boolean updateMonsterCorpseAbsorption(creature *monst) {
     short i;
     char buf[COLS], buf2[COLS];
 
-    if (monst->xLoc == monst->targetCorpseLoc[0]
-        && monst->yLoc == monst->targetCorpseLoc[1]
+    if (monst->loc.x == monst->targetCorpseLoc[0]
+        && monst->loc.y == monst->targetCorpseLoc[1]
         && (monst->bookkeepingFlags & MB_ABSORBING)) {
 
         if (--monst->corpseAbsorptionCounter <= 0) {
@@ -3203,7 +3232,7 @@ void monstersTurn(creature *monst) {
         && (monst->info.flags & MONST_GETS_TURN_ON_ACTIVATION)
         && rand_percent(monst->info.DFChance)) {
 
-        spawnDungeonFeature(monst->xLoc, monst->yLoc, &dungeonFeatureCatalog[monst->info.DFType], true, false);
+        spawnDungeonFeature(monst->loc.x, monst->loc.y, &dungeonFeatureCatalog[monst->info.DFType], true, false);
     }
 
     applyInstantTileEffectsToCreature(monst); // Paralysis, confusion etc. take effect before the monster can move.
@@ -3223,8 +3252,8 @@ void monstersTurn(creature *monst) {
 
     monst->ticksUntilTurn = monst->movementSpeed / 3; // will be later overwritten by movement or attack
 
-    x = monst->xLoc;
-    y = monst->yLoc;
+    x = monst->loc.x;
+    y = monst->loc.y;
 
     // Sleepers can awaken, but it takes a whole turn.
     if (monst->creatureState == MONSTER_SLEEPING) {
@@ -3264,12 +3293,12 @@ void monstersTurn(creature *monst) {
             if (target != monst
                 && (!(target->bookkeepingFlags & MB_SUBMERGED) || (monst->bookkeepingFlags & MB_SUBMERGED))
                 && monsterWillAttackTarget(monst, target)
-                && distanceBetween(x, y, target->xLoc, target->yLoc) < shortestDistance
-                && traversiblePathBetween(monst, target->xLoc, target->yLoc)
-                && (!monsterAvoids(monst, target->xLoc, target->yLoc) || (target->info.flags & MONST_ATTACKABLE_THRU_WALLS))
+                && distanceBetween(x, y, target->loc.x, target->loc.y) < shortestDistance
+                && traversiblePathBetween(monst, target->loc.x, target->loc.y)
+                && (!monsterAvoids(monst, target->loc.x, target->loc.y) || (target->info.flags & MONST_ATTACKABLE_THRU_WALLS))
                 && (!target->status[STATUS_INVISIBLE] || rand_percent(33))) {
 
-                shortestDistance = distanceBetween(x, y, target->xLoc, target->yLoc);
+                shortestDistance = distanceBetween(x, y, target->loc.x, target->loc.y);
                 closestMonster = target;
             }
         }
@@ -3278,8 +3307,8 @@ void monstersTurn(creature *monst) {
             return;
         }
         if (closestMonster && !(monst->info.flags & MONST_MAINTAINS_DISTANCE)) {
-            targetLoc[0] = closestMonster->xLoc;
-            targetLoc[1] = closestMonster->yLoc;
+            targetLoc[0] = closestMonster->loc.x;
+            targetLoc[1] = closestMonster->loc.y;
             if (moveMonsterPassivelyTowards(monst, targetLoc, monst->creatureState == MONSTER_ALLY)) {
                 return;
             }
@@ -3290,7 +3319,7 @@ void monstersTurn(creature *monst) {
     if ((monst->creatureState == MONSTER_TRACKING_SCENT
         || (monst->creatureState == MONSTER_ALLY && monst->status[STATUS_DISCORDANT]))
         // eels don't charge if you're not in the water
-        && (!(monst->info.flags & MONST_RESTRICTED_TO_LIQUID) || cellHasTMFlag(player.xLoc, player.yLoc, TM_ALLOWS_SUBMERGING))) {
+        && (!(monst->info.flags & MONST_RESTRICTED_TO_LIQUID) || cellHasTMFlag(player.loc.x, player.loc.y, TM_ALLOWS_SUBMERGING))) {
 
         // magic users sometimes cast spells
         if (monstUseMagic(monst)
@@ -3303,16 +3332,16 @@ void monstersTurn(creature *monst) {
             }
 
         // if the monster is adjacent to an ally and not adjacent to the player, attack the ally
-        if (distanceBetween(x, y, player.xLoc, player.yLoc) > 1
-            || diagonalBlocked(x, y, player.xLoc, player.yLoc, false)) {
+        if (distanceBetween(x, y, player.loc.x, player.loc.y) > 1
+            || diagonalBlocked(x, y, player.loc.x, player.loc.y, false)) {
             for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
                 creature *ally = nextCreature(&it);
                 if (monsterWillAttackTarget(monst, ally)
-                    && distanceBetween(x, y, ally->xLoc, ally->yLoc) == 1
+                    && distanceBetween(x, y, ally->loc.x, ally->loc.y) == 1
                     && (!ally->status[STATUS_INVISIBLE] || rand_percent(33))) {
 
-                    targetLoc[0] = ally->xLoc;
-                    targetLoc[1] = ally->yLoc;
+                    targetLoc[0] = ally->loc.x;
+                    targetLoc[1] = ally->loc.y;
                     if (moveMonsterPassivelyTowards(monst, targetLoc, true)) { // attack
                         return;
                     }
@@ -3324,8 +3353,8 @@ void monstersTurn(creature *monst) {
              || ((monst->info.flags & (MONST_IMMUNE_TO_WEBS | MONST_INVULNERABLE) && monsterCanShootWebs(monst))))
             && pmap[x][y].flags & IN_FIELD_OF_VIEW) {
 
-            playerLoc[0] = player.xLoc;
-            playerLoc[1] = player.yLoc;
+            playerLoc[0] = player.loc.x;
+            playerLoc[1] = player.loc.y;
             moveMonsterPassivelyTowards(monst, playerLoc, true); // attack
             return;
         }
@@ -3366,7 +3395,7 @@ void monstersTurn(creature *monst) {
             return;
         }
 
-        dir = nextStep(getSafetyMap(monst), monst->xLoc, monst->yLoc, NULL, true);
+        dir = nextStep(getSafetyMap(monst), monst->loc.x, monst->loc.y, NULL, true);
         if (dir != -1) {
             targetLoc[0] = x + nbDirs[dir][0];
             targetLoc[1] = y + nbDirs[dir][1];
@@ -3378,9 +3407,9 @@ void monstersTurn(creature *monst) {
                 handledPlayer = true;
                 if (!monst->status[STATUS_MAGICAL_FEAR] // Fearful monsters will never attack.
                     && monsterWillAttackTarget(monst, ally)
-                    && distanceBetween(x, y, ally->xLoc, ally->yLoc) <= 1) {
+                    && distanceBetween(x, y, ally->loc.x, ally->loc.y) <= 1) {
 
-                    moveMonster(monst, ally->xLoc - x, ally->yLoc - y); // attack the player if cornered
+                    moveMonster(monst, ally->loc.x - x, ally->loc.y - y); // attack the player if cornered
                     return;
                 }
             }
@@ -3388,7 +3417,7 @@ void monstersTurn(creature *monst) {
         return;
     } else if (monst->creatureState == MONSTER_WANDERING
                // eels wander if you're not in water
-               || ((monst->info.flags & MONST_RESTRICTED_TO_LIQUID) && !cellHasTMFlag(player.xLoc, player.yLoc, TM_ALLOWS_SUBMERGING))) {
+               || ((monst->info.flags & MONST_RESTRICTED_TO_LIQUID) && !cellHasTMFlag(player.loc.x, player.loc.y, TM_ALLOWS_SUBMERGING))) {
 
         // if we're standing in harmful terrain and there is a way to escape it, spend this turn escaping it.
         if (cellHasTerrainFlag(x, y, (T_HARMFUL_TERRAIN & ~T_IS_FIRE))
@@ -3419,9 +3448,9 @@ void monstersTurn(creature *monst) {
             && monst->leader->currentHP > (int) (monst->info.damage.upperBound * monsterDamageAdjustmentAmount(monst) / FP_FACTOR)
             && monst->leader->info.turnsBetweenRegen > 0
             && !(monst->info.abilityFlags & MA_POISONS)
-            && !diagonalBlocked(monst->xLoc, monst->yLoc, monst->leader->xLoc, monst->leader->yLoc, false)) {
+            && !diagonalBlocked(monst->loc.x, monst->loc.y, monst->leader->loc.x, monst->leader->loc.y, false)) {
 
-            if (distanceBetween(monst->xLoc, monst->yLoc, monst->leader->xLoc, monst->leader->yLoc) == 1) {
+            if (distanceBetween(monst->loc.x, monst->loc.y, monst->leader->loc.x, monst->leader->loc.y) == 1) {
                 // Attack if adjacent.
                 monst->ticksUntilTurn = monst->attackSpeed;
                 attack(monst, monst->leader, false);
@@ -3438,11 +3467,11 @@ void monstersTurn(creature *monst) {
             for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
                 creature *ally = nextCreature(&it);
                 if (monsterWillAttackTarget(monst, ally)
-                    && distanceBetween(x, y, ally->xLoc, ally->yLoc) == 1
+                    && distanceBetween(x, y, ally->loc.x, ally->loc.y) == 1
                     && (!ally->status[STATUS_INVISIBLE] || rand_percent(33))) {
 
-                    targetLoc[0] = ally->xLoc;
-                    targetLoc[1] = ally->yLoc;
+                    targetLoc[0] = ally->loc.x;
+                    targetLoc[1] = ally->loc.y;
                     if (moveMonsterPassivelyTowards(monst, targetLoc, true)) {
                         return;
                     }
@@ -3452,7 +3481,7 @@ void monstersTurn(creature *monst) {
 
         // if you're a follower, don't get separated from the pack
         if (monst->bookkeepingFlags & MB_FOLLOWER) {
-            if (distanceBetween(x, y, monst->leader->xLoc, monst->leader->yLoc) > 2) {
+            if (distanceBetween(x, y, monst->leader->loc.x, monst->leader->loc.y) > 2) {
                 pathTowardCreature(monst, monst->leader);
             } else if (monst->leader->info.flags & MONST_IMMOBILE) {
                 monsterMillAbout(monst, 100); // Worshipers will pace frenetically.
@@ -3465,7 +3494,7 @@ void monstersTurn(creature *monst) {
             // Step toward the chosen waypoint.
             dir = NO_DIRECTION;
             if (isValidWanderDestination(monst, monst->targetWaypointIndex)) {
-                dir = nextStep(rogue.wpDistance[monst->targetWaypointIndex], monst->xLoc, monst->yLoc, monst, false);
+                dir = nextStep(rogue.wpDistance[monst->targetWaypointIndex], monst->loc.x, monst->loc.y, monst, false);
             }
             // If there's no path forward, call that waypoint finished and pick a new one.
             if (!isValidWanderDestination(monst, monst->targetWaypointIndex)
@@ -3473,7 +3502,7 @@ void monstersTurn(creature *monst) {
 
                 chooseNewWanderDestination(monst);
                 if (isValidWanderDestination(monst, monst->targetWaypointIndex)) {
-                    dir = nextStep(rogue.wpDistance[monst->targetWaypointIndex], monst->xLoc, monst->yLoc, monst, false);
+                    dir = nextStep(rogue.wpDistance[monst->targetWaypointIndex], monst->loc.x, monst->loc.y, monst, false);
                 }
             }
             // If there's still no path forward, step randomly as though flitting.
@@ -3544,11 +3573,11 @@ boolean knownToPlayerAsPassableOrSecretDoor(short x, short y) {
 
 void setMonsterLocation(creature *monst, short newX, short newY) {
     unsigned long creatureFlag = (monst == &player ? HAS_PLAYER : HAS_MONSTER);
-    pmap[monst->xLoc][monst->yLoc].flags &= ~creatureFlag;
-    refreshDungeonCell(monst->xLoc, monst->yLoc);
+    pmap[monst->loc.x][monst->loc.y].flags &= ~creatureFlag;
+    refreshDungeonCell(monst->loc.x, monst->loc.y);
     monst->turnsSpentStationary = 0;
-    monst->xLoc = newX;
-    monst->yLoc = newY;
+    monst->loc.x = newX;
+    monst->loc.y = newY;
     pmap[newX][newY].flags |= creatureFlag;
     if ((monst->bookkeepingFlags & MB_SUBMERGED) && !cellHasTMFlag(newX, newY, TM_ALLOWS_SUBMERGING)) {
         monst->bookkeepingFlags &= ~MB_SUBMERGED;
@@ -3564,8 +3593,8 @@ void setMonsterLocation(creature *monst, short newX, short newY) {
     if (monst == &player) {
         updateVision(true);
         // get any items at the destination location
-        if (pmap[player.xLoc][player.yLoc].flags & HAS_ITEM) {
-            pickUpItemAt(player.xLoc, player.yLoc);
+        if (pmap[player.loc.x][player.loc.y].flags & HAS_ITEM) {
+            pickUpItemAt(player.loc.x, player.loc.y);
         }
     }
 }
@@ -3574,7 +3603,7 @@ void setMonsterLocation(creature *monst, short newX, short newY) {
 // (including attacking player, vomiting or struggling in vain)
 // Be sure that dx, dy are both in the range [-1, 1] or the move will sometimes fail due to the diagonal check.
 boolean moveMonster(creature *monst, short dx, short dy) {
-    short x = monst->xLoc, y = monst->yLoc;
+    short x = monst->loc.x, y = monst->loc.y;
     short newX, newY;
     short i;
     short confusedDirection, swarmDirection;
@@ -3647,8 +3676,8 @@ boolean moveMonster(creature *monst, short dx, short dy) {
                 creature *defender = nextCreature(&it);
                 if ((defender->bookkeepingFlags & MB_SEIZING)
                     && monstersAreEnemies(monst, defender)
-                    && distanceBetween(monst->xLoc, monst->yLoc, defender->xLoc, defender->yLoc) == 1
-                    && !diagonalBlocked(monst->xLoc, monst->yLoc, defender->xLoc, defender->yLoc, false)) {
+                    && distanceBetween(monst->loc.x, monst->loc.y, defender->loc.x, defender->loc.y) == 1
+                    && !diagonalBlocked(monst->loc.x, monst->loc.y, defender->loc.x, defender->loc.y, false)) {
 
                     monst->ticksUntilTurn = monst->movementSpeed;
                     return true;
@@ -3688,28 +3717,28 @@ boolean moveMonster(creature *monst, short dx, short dy) {
                 if (canPass(monst, defender)) {
 
                     // swap places
-                    pmap[defender->xLoc][defender->yLoc].flags &= ~HAS_MONSTER;
-                    refreshDungeonCell(defender->xLoc, defender->yLoc);
+                    pmap[defender->loc.x][defender->loc.y].flags &= ~HAS_MONSTER;
+                    refreshDungeonCell(defender->loc.x, defender->loc.y);
 
-                    pmap[monst->xLoc][monst->yLoc].flags &= ~HAS_MONSTER;
-                    refreshDungeonCell(monst->xLoc, monst->yLoc);
+                    pmap[monst->loc.x][monst->loc.y].flags &= ~HAS_MONSTER;
+                    refreshDungeonCell(monst->loc.x, monst->loc.y);
 
-                    monst->xLoc = newX;
-                    monst->yLoc = newY;
-                    pmap[monst->xLoc][monst->yLoc].flags |= HAS_MONSTER;
+                    monst->loc.x = newX;
+                    monst->loc.y = newY;
+                    pmap[monst->loc.x][monst->loc.y].flags |= HAS_MONSTER;
 
                     if (monsterAvoids(defender, x, y)) { // don't want a flying monster to swap a non-flying monster into lava!
-                        getQualifyingPathLocNear(&(defender->xLoc), &(defender->yLoc), x, y, true,
+                        getQualifyingPathLocNear(&(defender->loc.x), &(defender->loc.y), x, y, true,
                                                  forbiddenFlagsForMonster(&(defender->info)), HAS_PLAYER,
                                                  forbiddenFlagsForMonster(&(defender->info)), (HAS_PLAYER | HAS_MONSTER | HAS_STAIRS), false);
                     } else {
-                        defender->xLoc = x;
-                        defender->yLoc = y;
+                        defender->loc.x = x;
+                        defender->loc.y = y;
                     }
-                    pmap[defender->xLoc][defender->yLoc].flags |= HAS_MONSTER;
+                    pmap[defender->loc.x][defender->loc.y].flags |= HAS_MONSTER;
 
-                    refreshDungeonCell(monst->xLoc, monst->yLoc);
-                    refreshDungeonCell(defender->xLoc, defender->yLoc);
+                    refreshDungeonCell(monst->loc.x, monst->loc.y);
+                    refreshDungeonCell(defender->loc.x, defender->loc.y);
 
                     monst->ticksUntilTurn = monst->movementSpeed;
                     return true;
@@ -3718,8 +3747,8 @@ boolean moveMonster(creature *monst, short dx, short dy) {
                 // Sights are set on an enemy monster. Would we rather swarm than attack?
                 swarmDirection = monsterSwarmDirection(monst, defender);
                 if (swarmDirection != NO_DIRECTION) {
-                    newX = monst->xLoc + nbDirs[swarmDirection][0];
-                    newY = monst->yLoc + nbDirs[swarmDirection][1];
+                    newX = monst->loc.x + nbDirs[swarmDirection][0];
+                    newY = monst->loc.y + nbDirs[swarmDirection][1];
                     setMonsterLocation(monst, newX, newY);
                     monst->ticksUntilTurn = monst->movementSpeed;
                     return true;
@@ -3778,7 +3807,7 @@ void findAlternativeHomeFor(creature *monst, short *x, short *y, boolean chooseR
     for (maxPermissibleDifference = 1; maxPermissibleDifference < max(DCOLS, DROWS); maxPermissibleDifference++) {
         for (i=0; i < DCOLS; i++) {
             for (j=0; j<DROWS; j++) {
-                dist = abs(sCols[i] - monst->xLoc) + abs(sRows[j] - monst->yLoc);
+                dist = abs(sCols[i] - monst->loc.x) + abs(sRows[j] - monst->loc.y);
                 if (dist <= maxPermissibleDifference
                     && dist > 0
                     && !(pmap[sCols[i]][sRows[j]].flags & (HAS_PLAYER | HAS_MONSTER))
@@ -3798,7 +3827,7 @@ void findAlternativeHomeFor(creature *monst, short *x, short *y, boolean chooseR
 }
 
 // blockingMap is optional
-boolean getQualifyingLocNear(short loc[2],
+boolean getQualifyingLocNear(pos *loc,
                              short x, short y,
                              boolean hallwaysAllowed,
                              char blockingMap[DCOLS][DROWS],
@@ -3806,14 +3835,12 @@ boolean getQualifyingLocNear(short loc[2],
                              unsigned long forbiddenMapFlags,
                              boolean forbidLiquid,
                              boolean deterministic) {
-    short i, j, k, candidateLocs, randIndex;
-
-    candidateLocs = 0;
+    short candidateLocs = 0;
 
     // count up the number of candidate locations
-    for (k=0; k<max(DROWS, DCOLS) && !candidateLocs; k++) {
-        for (i = x-k; i <= x+k; i++) {
-            for (j = y-k; j <= y+k; j++) {
+    for (int k=0; k<max(DROWS, DCOLS) && !candidateLocs; k++) {
+        for (int i = x-k; i <= x+k; i++) {
+            for (int j = y-k; j <= y+k; j++) {
                 if (coordinatesAreInMap(i, j)
                     && (i == x-k || i == x+k || j == y-k || j == y+k)
                     && (!blockingMap || !blockingMap[i][j])
@@ -3832,15 +3859,16 @@ boolean getQualifyingLocNear(short loc[2],
     }
 
     // and pick one
+    short randIndex;
     if (deterministic) {
         randIndex = 1 + candidateLocs / 2;
     } else {
         randIndex = rand_range(1, candidateLocs);
     }
 
-    for (k=0; k<max(DROWS, DCOLS); k++) {
-        for (i = x-k; i <= x+k; i++) {
-            for (j = y-k; j <= y+k; j++) {
+    for (int k=0; k<max(DROWS, DCOLS); k++) {
+        for (int i = x-k; i <= x+k; i++) {
+            for (int j = y-k; j <= y+k; j++) {
                 if (coordinatesAreInMap(i, j)
                     && (i == x-k || i == x+k || j == y-k || j == y+k)
                     && (!blockingMap || !blockingMap[i][j])
@@ -3849,8 +3877,7 @@ boolean getQualifyingLocNear(short loc[2],
                     && (!forbidLiquid || pmap[i][j].layers[LIQUID] == NOTHING)
                     && (hallwaysAllowed || passableArcCount(i, j) < 2)) {
                     if (--randIndex == 0) {
-                        loc[0] = i;
-                        loc[1] = j;
+                        *loc = (pos){ .x = i, .y = j };
                         return true;
                     }
                 }
@@ -3862,18 +3889,16 @@ boolean getQualifyingLocNear(short loc[2],
     return false; // should never reach this point
 }
 
-boolean getQualifyingGridLocNear(short loc[2],
+boolean getQualifyingGridLocNear(pos *loc,
                                  short x, short y,
                                  boolean grid[DCOLS][DROWS],
                                  boolean deterministic) {
-    short i, j, k, candidateLocs, randIndex;
-
-    candidateLocs = 0;
+    short candidateLocs = 0;
 
     // count up the number of candidate locations
-    for (k=0; k<max(DROWS, DCOLS) && !candidateLocs; k++) {
-        for (i = x-k; i <= x+k; i++) {
-            for (j = y-k; j <= y+k; j++) {
+    for (int k=0; k<max(DROWS, DCOLS) && !candidateLocs; k++) {
+        for (int i = x-k; i <= x+k; i++) {
+            for (int j = y-k; j <= y+k; j++) {
                 if (coordinatesAreInMap(i, j)
                     && (i == x-k || i == x+k || j == y-k || j == y+k)
                     && grid[i][j]) {
@@ -3889,22 +3914,22 @@ boolean getQualifyingGridLocNear(short loc[2],
     }
 
     // and pick one
+    short randIndex;
     if (deterministic) {
         randIndex = 1 + candidateLocs / 2;
     } else {
         randIndex = rand_range(1, candidateLocs);
     }
 
-    for (k=0; k<max(DROWS, DCOLS); k++) {
-        for (i = x-k; i <= x+k; i++) {
-            for (j = y-k; j <= y+k; j++) {
+    for (int k=0; k<max(DROWS, DCOLS); k++) {
+        for (int i = x-k; i <= x+k; i++) {
+            for (int j = y-k; j <= y+k; j++) {
                 if (coordinatesAreInMap(i, j)
                     && (i == x-k || i == x+k || j == y-k || j == y+k)
                     && grid[i][j]) {
 
                     if (--randIndex == 0) {
-                        loc[0] = i;
-                        loc[1] = j;
+                        *loc = (pos){ .x = i, .y = j };
                         return true;
                     }
                 }
@@ -3918,7 +3943,7 @@ boolean getQualifyingGridLocNear(short loc[2],
 
 void makeMonsterDropItem(creature *monst) {
     short x, y;
-    getQualifyingPathLocNear(&x, &y, monst->xLoc, monst->yLoc, true,
+    getQualifyingPathLocNear(&x, &y, monst->loc.x, monst->loc.y, true,
                              (T_DIVIDES_LEVEL), 0,
                              T_OBSTRUCTS_ITEMS, (HAS_PLAYER | HAS_STAIRS | HAS_ITEM), false);
     placeItem(monst->carriedItem, x, y);
@@ -4006,15 +4031,15 @@ void toggleMonsterDormancy(creature *monst) {
         // Add it to the normal list.
         prependCreature(monsters, monst);
 
-        pmap[monst->xLoc][monst->yLoc].flags &= ~HAS_DORMANT_MONSTER;
+        pmap[monst->loc.x][monst->loc.y].flags &= ~HAS_DORMANT_MONSTER;
 
         // Does it need a new location?
-        if (pmap[monst->xLoc][monst->yLoc].flags & (HAS_MONSTER | HAS_PLAYER)) { // Occupied!
+        if (pmap[monst->loc.x][monst->loc.y].flags & (HAS_MONSTER | HAS_PLAYER)) { // Occupied!
             getQualifyingPathLocNear(
-                &(monst->xLoc),
-                &(monst->yLoc),
-                monst->xLoc,
-                monst->yLoc,
+                &(monst->loc.x),
+                &(monst->loc.y),
+                monst->loc.x,
+                monst->loc.y,
                 true,
                 T_DIVIDES_LEVEL & avoidedFlagsForMonster(&(monst->info)),
                 HAS_PLAYER,
@@ -4022,9 +4047,9 @@ void toggleMonsterDormancy(creature *monst) {
                 (HAS_PLAYER | HAS_MONSTER | HAS_STAIRS),
                 false
             );
-            // getQualifyingLocNear(loc, monst->xLoc, monst->yLoc, true, 0, T_PATHING_BLOCKER, (HAS_PLAYER | HAS_MONSTER), false, false);
-            // monst->xLoc = loc[0];
-            // monst->yLoc = loc[1];
+            // getQualifyingLocNear(loc, monst->loc.x, monst->loc.y, true, 0, T_PATHING_BLOCKER, (HAS_PLAYER | HAS_MONSTER), false, false);
+            // monst->loc.x = loc[0];
+            // monst->loc.y = loc[1];
         }
 
         if (monst->bookkeepingFlags & MB_MARKED_FOR_SACRIFICE) {
@@ -4038,7 +4063,7 @@ void toggleMonsterDormancy(creature *monst) {
         // Don't want it to move before the player has a chance to react.
         monst->ticksUntilTurn = 200;
 
-        pmap[monst->xLoc][monst->yLoc].flags |= HAS_MONSTER;
+        pmap[monst->loc.x][monst->loc.y].flags |= HAS_MONSTER;
         monst->bookkeepingFlags &= ~MB_IS_DORMANT;
         fadeInMonster(monst);
         return;
@@ -4049,8 +4074,8 @@ void toggleMonsterDormancy(creature *monst) {
         // Add it to the dormant chain.
         prependCreature(dormantMonsters, monst);
         // Miscellaneous transitional tasks.
-        pmap[monst->xLoc][monst->yLoc].flags &= ~HAS_MONSTER;
-        pmap[monst->xLoc][monst->yLoc].flags |= HAS_DORMANT_MONSTER;
+        pmap[monst->loc.x][monst->loc.y].flags &= ~HAS_MONSTER;
+        pmap[monst->loc.x][monst->loc.y].flags |= HAS_DORMANT_MONSTER;
         monst->bookkeepingFlags |= MB_IS_DORMANT;
         return;
     }
@@ -4062,7 +4087,7 @@ boolean staffOrWandEffectOnMonsterDescription(char *newText, item *theItem, crea
     fixpt enchant = netEnchant(theItem);
 
     if ((theItem->category & (STAFF | WAND))
-        && tableForItemCategory(theItem->category, NULL)[theItem->kind].identified) {
+        && tableForItemCategory(theItem->category)[theItem->kind].identified) {
 
         monsterName(monstName, monst, true);
         itemName(theItem, theItemName, false, false, NULL);
@@ -4154,7 +4179,7 @@ void monsterDetails(char buf[], creature *monst) {
     upperCase(capMonstName);
 
     if (!(monst->info.flags & MONST_RESTRICTED_TO_LIQUID)
-         || cellHasTMFlag(monst->xLoc, monst->yLoc, TM_ALLOWS_SUBMERGING)) {
+         || cellHasTMFlag(monst->loc.x, monst->loc.y, TM_ALLOWS_SUBMERGING)) {
         // If the monster is not a beached whale, print the ordinary flavor text.
         sprintf(newText, "     %s\n     ", monsterText[monst->info.monsterID].flavorText);
         strcat(buf, newText);
@@ -4173,12 +4198,12 @@ void monsterDetails(char buf[], creature *monst) {
     }
 
     if (!(monst->info.flags & MONST_ATTACKABLE_THRU_WALLS)
-        && cellHasTerrainFlag(monst->xLoc, monst->yLoc, T_OBSTRUCTS_PASSABILITY)) {
+        && cellHasTerrainFlag(monst->loc.x, monst->loc.y, T_OBSTRUCTS_PASSABILITY)) {
         // If the monster is trapped in impassible terrain, explain as much.
         sprintf(newText, "%s is trapped %s %s.\n     ",
                 capMonstName,
-                (tileCatalog[pmap[monst->xLoc][monst->yLoc].layers[layerWithFlag(monst->xLoc, monst->yLoc, T_OBSTRUCTS_PASSABILITY)]].mechFlags & TM_STAND_IN_TILE) ? "in" : "on",
-                tileCatalog[pmap[monst->xLoc][monst->yLoc].layers[layerWithFlag(monst->xLoc, monst->yLoc, T_OBSTRUCTS_PASSABILITY)]].description);
+                (tileCatalog[pmap[monst->loc.x][monst->loc.y].layers[layerWithFlag(monst->loc.x, monst->loc.y, T_OBSTRUCTS_PASSABILITY)]].mechFlags & TM_STAND_IN_TILE) ? "in" : "on",
+                tileCatalog[pmap[monst->loc.x][monst->loc.y].layers[layerWithFlag(monst->loc.x, monst->loc.y, T_OBSTRUCTS_PASSABILITY)]].description);
         strcat(buf, newText);
     }
 
@@ -4216,7 +4241,7 @@ void monsterDetails(char buf[], creature *monst) {
     }
 
     // Combat info for the monster attacking the player
-    if ((monst->info.flags & MONST_RESTRICTED_TO_LIQUID) && !cellHasTMFlag(monst->xLoc, monst->yLoc, TM_ALLOWS_SUBMERGING)) {
+    if ((monst->info.flags & MONST_RESTRICTED_TO_LIQUID) && !cellHasTMFlag(monst->loc.x, monst->loc.y, TM_ALLOWS_SUBMERGING)) {
         sprintf(newText, "     %s writhes helplessly on dry land.\n     ", capMonstName);
     } else if (rogue.armor
                && (rogue.armor->flags & ITEM_RUNIC)
