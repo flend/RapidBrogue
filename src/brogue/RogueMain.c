@@ -170,6 +170,10 @@ void initializeRogue(uint64_t seed) {
     rogue.milliseconds = 0;
     rogue.warningPauseMode = true;
 
+    if (seed != 0) {
+        rogue.seededGame = true;
+    }
+
     rogue.RNG = RNG_SUBSTANTIVE;
     if (!rogue.playbackMode) {
         rogue.seed = seedRandomGenerator(seed);
