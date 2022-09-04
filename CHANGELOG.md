@@ -6,6 +6,8 @@ Unreleased
 
 -
   Fixed Wand of Plenty description (not correctly pulled over from CE 1.11.1)
+-
+  Light level now decreases properly with depth (depth 6 is now as bright as depth 24 is in vanilla Brogue CE)
 
 1.3.0
 =====
