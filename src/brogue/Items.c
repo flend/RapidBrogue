@@ -7373,6 +7373,8 @@ int itemMagicPolarity(item *theItem) {
             }
         case AMULET:
             return MAGIC_POLARITY_BENEVOLENT;
+        case GEM:
+            return MAGIC_POLARITY_BENEVOLENT;
         default:
             return MAGIC_POLARITY_NEUTRAL;
     }
