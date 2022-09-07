@@ -6,6 +6,8 @@ Unreleased
 
 -
   Fixed Wand of Plenty description (not correctly pulled over from CE 1.11.1)
+-
+  Lumenstones can be detected with Detect Magic potions
 
 1.3.0
 =====
