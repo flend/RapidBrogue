@@ -390,7 +390,7 @@ void initializeRogue(uint64_t seed) {
 
     recalculateEquipmentBonuses();
 
-    if(D_ALWAYS_OMNISCENCE) {
+    if (D_OMNISCENCE) {
         rogue.playbackOmniscience = 1;
     }
 
