@@ -18,11 +18,11 @@
 
 #define OUTPUT_SIZE 10
 
-#define EVENT_MESSAGE1_START 19
-#define EVENT_MESSAGE2_START 70
+#define EVENT_MESSAGE1_START 24
+#define EVENT_MESSAGE2_START 75
 #define EVENT_MESSAGE1_SIZE 51
 #define EVENT_MESSAGE2_SIZE 30
-#define EVENT_SIZE 100
+#define EVENT_SIZE 105
 #define MAX_INPUT_SIZE 5
 #define MOUSE_INPUT_SIZE 4
 #define OUTPUT_BUFFER_SIZE 1000
@@ -198,7 +198,7 @@ static void sendStatusUpdate() {
 
     statusValues[DEEPEST_LEVEL_STATUS] = rogue.deepestLevel;
     statusValues[GOLD_STATUS] = rogue.gold;
-    statusValues[SEED_STATUS] = rogue.seed;
+    statusValues[SEED_STATUS] = rogue.seededGame;
     statusValues[EASY_MODE_STATUS] = rogue.easyMode;
 
     memset(statusOutputBuffer, 0, OUTPUT_SIZE);
@@ -306,9 +306,9 @@ static void web_notifyEvent(short eventId, int data1, int data2, const char *str
     //web_setGraphicsEnabled is now called before the main game loop, so need to initalize platform if not previously initialized
     setupPlatform();
 
-    // Coordinates of (254, 254) will let the server and client know that this is a event notification update rather than a cell update
+    // Coordinates of (254, 253) identifies an event update v1 (254 - V)
     statusOutputBuffer[0] = 254;
-    statusOutputBuffer[1] = 254;
+    statusOutputBuffer[1] = 253;
 
     statusOutputBuffer[2] = eventId;
 
@@ -324,10 +324,15 @@ static void web_notifyEvent(short eventId, int data1, int data2, const char *str
     statusOutputBuffer[12] = rogue.gold >> 16 & 0xff;
     statusOutputBuffer[13] = rogue.gold >> 8 & 0xff;
     statusOutputBuffer[14] = rogue.gold;
-    statusOutputBuffer[15] = rogue.seed >> 24 & 0xff;
-    statusOutputBuffer[16] = rogue.seed >> 16 & 0xff;
-    statusOutputBuffer[17] = rogue.seed >> 8 & 0xff;
-    statusOutputBuffer[18] = rogue.seed;
+    statusOutputBuffer[15] = rogue.seed >> 56 & 0xff;
+    statusOutputBuffer[16] = rogue.seed >> 48 & 0xff;
+    statusOutputBuffer[17] = rogue.seed >> 40 & 0xff;
+    statusOutputBuffer[18] = rogue.seed >> 32 & 0xff;
+    statusOutputBuffer[19] = rogue.seed >> 24 & 0xff;
+    statusOutputBuffer[20] = rogue.seed >> 16 & 0xff;
+    statusOutputBuffer[21] = rogue.seed >> 8 & 0xff;
+    statusOutputBuffer[22] = rogue.seed;
+    statusOutputBuffer[23] = rogue.seededGame;
 
     // str1 is the death / victory message
     memcpy(statusOutputBuffer + EVENT_MESSAGE1_START, str1, EVENT_MESSAGE1_SIZE);

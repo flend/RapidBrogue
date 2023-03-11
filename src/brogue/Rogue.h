@@ -2376,6 +2376,7 @@ typedef struct playerCharacter {
     boolean eligibleToUseStairs;        // so the player uses stairs only when he steps onto them
     boolean trueColorMode;              // whether lighting effects are disabled
     boolean displayStealthRangeMode;    // whether your stealth range is displayed
+    boolean seededGame;                 // whether the game used a specified seed (true) or clock-based seed (false)
     boolean warningPauseMode;           // whether the game requires a keypress to continue in low health / high poison situations
     boolean hideSeed;                   // whether seed is hidden when pressing SEED_KEY
     boolean quit;                       // to skip the typical end-game theatrics when the player quits
