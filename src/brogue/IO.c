@@ -2645,7 +2645,7 @@ void executeKeystroke(signed long keystroke, boolean controlKey, boolean shiftKe
                 messageWithColor(KEYBOARD_LABELS ? "Low health warning pauses enabled. Press '[' again to disable." : "Pause on warnings activated.",
                                  &teal, false);
             } else {
-                 messageWithColor(KEYBOARD_LABELS ? "Low health warning pauses disabled. Press '[' again to enable." : "Pause on warnings deactivated.",
+                messageWithColor(KEYBOARD_LABELS ? "Low health warning pauses disabled. Press '[' again to enable." : "Pause on warnings deactivated.",
                                  &teal, false);
             }
             break;
