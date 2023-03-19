@@ -248,7 +248,7 @@ typedef struct pos {
 #define POTION_TELEPATHY_DURATION 30
 
 #define ON_HIT_WEAKEN_DURATION 50          // duration of on-hit hallucination effect on player
-#define ON_HIT_HALLUCINATE_DURATION 20      // duration of on-hit hallucination effect on player
+#define ON_HIT_HALLUCINATE_DURATION 10      // duration of on-hit hallucination effect on player
 #define ON_HIT_MERCY_HEAL_PERCENT 50        // percentage of damage healed on-hit by mercy weapon effect
 
 #define MUTATIONS_OCCUR_ABOVE_LEVEL 2

@@ -675,7 +675,7 @@ void populateItems(short upstairsX, short upstairsY) {
             theKind = POTION_STRENGTH;
         }
 #elif BULLET_BROGUE
-        } else if (rogue.depthLevel < 3 && rogue.bonusWeaponsSpawned < rogue.depthLevel * 2) {
+        } else if (rogue.depthLevel < 3 && rogue.bonusWeaponsSpawned < rogue.depthLevel) {
             theCategory = WEAPON;
             rogue.bonusWeaponsSpawned++;
             if (D_MESSAGE_ITEM_GENERATION) printf("\n(!l) Depth %i: spawning bonus weapon", rogue.depthLevel);

@@ -1722,7 +1722,7 @@ void addMachines() {
         && (rogue.rewardRoomsGenerated + machineCount) * 2 < rogue.depthLevel * MACHINES_FACTOR) {
 #elif BULLET_BROGUE
     while (rogue.depthLevel < DEEPEST_LEVEL
-        && (rogue.rewardRoomsGenerated + machineCount) * 2 < rogue.depthLevel * MACHINES_FACTOR) {
+        && (rogue.rewardRoomsGenerated + machineCount) < rogue.depthLevel * MACHINES_FACTOR) {
 #else
     while (rogue.depthLevel <= AMULET_LEVEL
         && (rogue.rewardRoomsGenerated + machineCount) * 4 + 2 < rogue.depthLevel * MACHINES_FACTOR) {
