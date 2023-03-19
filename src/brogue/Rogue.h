@@ -216,6 +216,7 @@ typedef struct pos {
 #define ON_HIT_MERCY_HEAL_PERCENT 50        // percentage of damage healed on-hit by mercy weapon effect
 
 #define MUTATIONS_OCCUR_ABOVE_LEVEL 3
+#define MONSTER_OOD_CHANCE 10
 
 #define PLAYER_TRANSFERENCE_RATIO 10        // player transference heal is (enchant / PLAYER_TRANSFERENCE_RATIO)
 #elif BULLET_BROGUE
@@ -252,6 +253,7 @@ typedef struct pos {
 #define ON_HIT_MERCY_HEAL_PERCENT 50        // percentage of damage healed on-hit by mercy weapon effect
 
 #define MUTATIONS_OCCUR_ABOVE_LEVEL 2
+#define MONSTER_OOD_CHANCE 5
 
 #define PLAYER_TRANSFERENCE_RATIO 10        // player transference heal is (enchant / PLAYER_TRANSFERENCE_RATIO)
 #else
@@ -293,6 +295,7 @@ typedef struct pos {
 #define BOLT_INVISIBILITY_DURATION 150
 
 #define MUTATIONS_OCCUR_ABOVE_LEVEL 10
+#define MONSTER_OOD_CHANCE 10
 
 #define PLAYER_TRANSFERENCE_RATIO 20        // player transference heal is (enchant / PLAYER_TRANSFERENCE_RATIO)
 #endif
