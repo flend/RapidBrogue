@@ -82,6 +82,8 @@ unsigned long pickItemCategory(unsigned long theCategory) {
     short i, sum, randIndex;
 #ifdef RAPID_BROGUE
     short probabilities[13] =                       {50,    84,     104,     3,      3,      10,     8,      2,      3,      2,        0,        0,      0};
+#elif BULLET_BROGUE
+    short probabilities[13] =                       {50,    84,     104,     3,      3,      10,     8,      2,      3,      2,        0,        0,      0};
 #else
     short probabilities[13] =                       {50,    42,     52,     3,      3,      10,     8,      2,      3,      2,        0,        0,      0};
 #endif
@@ -319,11 +321,7 @@ item *makeItemInto(item *theItem, unsigned long itemCategory, short itemKind) {
         case GOLD:
             theEntry = NULL;
             theItem->displayChar = G_GOLD;
-#ifdef RAPID_BROGUE
-            theItem->quantity = rand_range(50 + rogue.depthLevel * 40, 100 + rogue.depthLevel * 60);
-#else
-            theItem->quantity = rand_range(50 + rogue.depthLevel * 10, 100 + rogue.depthLevel * 15);
-#endif
+            theItem->quantity = rand_range(50 + rogue.depthLevel * 10 * DEPTH_ACCELERATOR, 100 + rogue.depthLevel * 15 * DEPTH_ACCELERATOR);
             break;
         case AMULET:
             theEntry = NULL;
@@ -540,13 +538,11 @@ void populateItems(short upstairsX, short upstairsY) {
         }
 #ifdef RAPID_BROGUE
         numberOfItems += 4; // 4 extra items in rapid brogue, accounting for extra guaranteed potions and scrolls. We also bias weights to consumables (since there are so many vaults)
+#elif BULLET_BROGUE
+        numberOfItems += 4; // 4 extra items in rapid brogue, accounting for extra guaranteed potions and scrolls. We also bias weights to consumables (since there are so many vaults)
 #endif
 
-#ifdef RAPID_BROGUE
-        numberOfGoldPiles = min(5, rogue.depthLevel);
-#else
-        numberOfGoldPiles = min(5, rogue.depthLevel / 4);
-#endif
+        numberOfGoldPiles = min(5, rogue.depthLevel / 4 * DEPTH_ACCELERATOR);
         for (goldBonusProbability = 60;
              rand_percent(goldBonusProbability) && numberOfGoldPiles <= 10;
              goldBonusProbability -= 15) {
@@ -557,9 +553,17 @@ void populateItems(short upstairsX, short upstairsY) {
         // the production schedule as of the previous depth.
 #ifdef RAPID_BROGUE
         if (rogue.depthLevel > 2) {
-            if (rogue.goldGenerated < aggregateGoldLowerBound(rogue.depthLevel * 4 - 1)) {
+            if (rogue.goldGenerated < aggregateGoldLowerBound(rogue.depthLevel * DEPTH_ACCELERATOR - 1)) {
                 numberOfGoldPiles += 2;
-            } else if (rogue.goldGenerated > aggregateGoldUpperBound(rogue.depthLevel * 4 - 1)) {
+            } else if (rogue.goldGenerated > aggregateGoldUpperBound(rogue.depthLevel * DEPTH_ACCELERATOR - 1)) {
+                numberOfGoldPiles -= 2;
+            }
+        }
+#elif BULLET_BROGUE
+        if (rogue.depthLevel > 1) {
+            if (rogue.goldGenerated < aggregateGoldLowerBound(rogue.depthLevel * DEPTH_ACCELERATOR - 1)) {
+                numberOfGoldPiles += 2;
+            } else if (rogue.goldGenerated > aggregateGoldUpperBound(rogue.depthLevel * DEPTH_ACCELERATOR - 1)) {
                 numberOfGoldPiles -= 2;
             }
         }
@@ -644,14 +648,8 @@ void populateItems(short upstairsX, short upstairsY) {
         potionTable[POTION_LIFE].frequency = rogue.lifePotionFrequency;
 
         // Adjust the desired item category if necessary.
-#ifdef RAPID_BROGUE
-        //Now the same as vanilla, may be not generous enough for levels > 6
-       if ((rogue.foodSpawned + foodTable[RATION].strengthRequired / 3) * 4 * FP_FACTOR
-            <= (POW_FOOD[rogue.depthLevel - 1] + (randomDepthOffset * FP_FACTOR)) * foodTable[RATION].strengthRequired * 45/100) {
-#else
         if ((rogue.foodSpawned + foodTable[RATION].strengthRequired / 3) * 4 * FP_FACTOR
             <= (POW_FOOD[rogue.depthLevel-1] + (randomDepthOffset * FP_FACTOR)) * foodTable[RATION].strengthRequired * 45/100) {
-#endif
             // Guarantee a certain nutrition minimum of the approximate equivalent of one ration every four levels,
             // with more food on deeper levels since they generally take more turns to complete.
             theCategory = FOOD;
@@ -661,6 +659,22 @@ void populateItems(short upstairsX, short upstairsY) {
         } else if (rogue.depthLevel > AMULET_LEVEL) {
             theCategory = GEM;
 #ifdef RAPID_BROGUE
+        } else if (rogue.lifePotionsSpawned * 4 + 3 < rogue.depthLevel * 4 + randomDepthOffset) {
+            theCategory = POTION;
+            theKind = POTION_LIFE;
+        //Rapid brogue also guarantees a detect magic by level 2
+        } else if (rogue.detectMagicPotionsSpawned == 0 && rogue.depthLevel == 2) {
+            theCategory = POTION;
+            theKind = POTION_DETECT_MAGIC;
+        //Rapid brogue also guarantees roughly 1 strength and 1 enchantment scroll per level
+        } else if (rogue.enchantmentScrollsSpawned * 4 < rogue.depthLevel * 4 + randomDepthOffset) {
+            theCategory = SCROLL;
+            theKind = SCROLL_ENCHANTING;
+        } else if (rogue.strengthPotionsSpawned * 4 + 3 < rogue.depthLevel * 4 + randomDepthOffset) {
+            theCategory = POTION;
+            theKind = POTION_STRENGTH;
+        }
+#elif BULLET_BROGUE
         } else if (rogue.lifePotionsSpawned * 4 + 3 < rogue.depthLevel * 4 + randomDepthOffset) {
             theCategory = POTION;
             theKind = POTION_LIFE;
@@ -709,6 +723,8 @@ void populateItems(short upstairsX, short upstairsY) {
             rogue.enchantScrollFrequency -= 50;
 #ifdef RAPID_BROGUE
             rogue.enchantmentScrollsSpawned++;
+#elif BULLET_BROGUE
+            rogue.enchantmentScrollsSpawned++;
 #endif
             if (D_MESSAGE_ITEM_GENERATION) printf("\n(?)  Depth %i: generated an enchant scroll at %i frequency", rogue.depthLevel, rogue.enchantScrollFrequency);
         } else if (theItem->category & POTION && theItem->kind == POTION_LIFE) {
@@ -719,6 +735,11 @@ void populateItems(short upstairsX, short upstairsY) {
             if (D_MESSAGE_ITEM_GENERATION) printf("\n(!s) Depth %i: generated a strength potion at %i frequency", rogue.depthLevel, rogue.strengthPotionFrequency);
             rogue.strengthPotionFrequency -= 50;
 #ifdef RAPID_BROGUE
+            rogue.strengthPotionsSpawned++;
+        } else if (theItem->category & POTION && theItem->kind == POTION_DETECT_MAGIC) {
+            if (D_MESSAGE_ITEM_GENERATION) printf("\n(!d) Depth %i: generated a detect magic potion", rogue.depthLevel);
+            rogue.detectMagicPotionsSpawned++;
+#elif BULLET_BROGUE
             rogue.strengthPotionsSpawned++;
         } else if (theItem->category & POTION && theItem->kind == POTION_DETECT_MAGIC) {
             if (D_MESSAGE_ITEM_GENERATION) printf("\n(!d) Depth %i: generated a detect magic potion", rogue.depthLevel);

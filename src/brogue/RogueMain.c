@@ -328,6 +328,10 @@ void initializeRogue(uint64_t seed) {
     rogue.strengthPotionsSpawned = 0;
     rogue.enchantmentScrollsSpawned = 0;
     rogue.detectMagicPotionsSpawned = 0;
+#elif BULLET_BROGUE
+    rogue.strengthPotionsSpawned = 0;
+    rogue.enchantmentScrollsSpawned = 0;
+    rogue.detectMagicPotionsSpawned = 0;
 #endif
     rogue.gold = 0;
     rogue.goldGenerated = 0;
@@ -758,6 +762,8 @@ void startLevel(short oldLevelNumber, short stairDirection) {
         } else if (rogue.depthLevel == DEEPEST_LEVEL) {
 #ifdef RAPID_BROGUE
             messageWithColor("An overwhelming sense of peace and tranquility settles upon you... then you see monsters. Doh.", &lightBlue, 0);
+#elif BULLET_BROGUE
+            messageWithColor("An overwhelming sense of peace... nah, not in this dungeon.", &lightBlue, 0);
 #else
             messageWithColor("An overwhelming sense of peace and tranquility settles upon you.", &lightBlue, 0);
 #endif

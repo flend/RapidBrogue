@@ -279,6 +279,21 @@ short charmRechargeDelay(short charmKind, short enchant) {
         1,   // Recharging
         1,   // Negation
     };
+#elif BULLET_BROGUE
+    const short minRechargeTurns[NUMBER_CHARM_KINDS] = {
+        1,   // Health
+        1,   // Protection
+        1,   // Haste
+        1,   // Fire immunity
+        1,   // Invisibility
+        1,   // Telepathy
+        1,   // Levitation
+        1,   // Shattering
+        1,   // Guardian
+        2,   // Teleportation
+        1,   // Recharging
+        1,   // Negation
+    };
 #else
     const short minRechargeTurns[NUMBER_CHARM_KINDS] = {
         1,   // Health

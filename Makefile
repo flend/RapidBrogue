@@ -37,6 +37,10 @@ ifeq ($(RAPIDBROGUE),YES)
 	cppflags += -DRAPID_BROGUE
 endif
 
+ifeq ($(BULLETBROGUE),YES)
+	cppflags += -DBULLET_BROGUE
+endif
+
 ifeq ($(MAC_APP),YES)
 	cppflags += -DSDL_PATHS
 endif
