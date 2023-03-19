@@ -72,7 +72,13 @@ strings, but they are equal (rogue.patchLevel is set to 0).
 #define BROGUE_CE_MINOR 12
 #define BROGUE_CE_PATCH 1
 
-#define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_CE_MAJOR != (a) ? BROGUE_CE_MAJOR > (a) : BROGUE_CE_MINOR != (b) ? BROGUE_CE_MINOR > (b) : BROGUE_CE_PATCH >= (c))
+#define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_CE_MAJOR != (a) ? BROGUE_CE_MAJOR > (a) : BROGUE_CE_MINOR != (b) ? BROGUE_CE_MINOR > (b) : rogue.patchVersion >= (c))
+#elif BULLET_BROGUE
+#define BROGUE_CE_MAJOR 1
+#define BROGUE_CE_MINOR 12
+#define BROGUE_CE_PATCH 1
+
+#define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_CE_MAJOR != (a) ? BROGUE_CE_MAJOR > (a) : BROGUE_CE_MINOR != (b) ? BROGUE_CE_MINOR > (b) : rogue.patchVersion >= (c))
 #else
 #define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_MAJOR != (a) ? BROGUE_MAJOR > (a) : BROGUE_MINOR != (b) ? BROGUE_MINOR > (b) : rogue.patchVersion >= (c))
 #endif
@@ -210,6 +216,42 @@ typedef struct pos {
 #define ON_HIT_MERCY_HEAL_PERCENT 50        // percentage of damage healed on-hit by mercy weapon effect
 
 #define MUTATIONS_OCCUR_ABOVE_LEVEL 3
+
+#define PLAYER_TRANSFERENCE_RATIO 10        // player transference heal is (enchant / PLAYER_TRANSFERENCE_RATIO)
+#elif BULLET_BROGUE
+
+#define AMULET_LEVEL            3          // how deep before the amulet appears
+#define DEEPEST_LEVEL           5         // how deep the universe goes
+
+#define DEPTH_ACCELERATOR 8 //How quickly depth-dependent features scale as compared to the usual 26/40 levels
+
+#define MINIMUM_LAVA_LEVEL 2
+#define MINIMUM_BRIMSTONE_LEVEL 3
+
+#define MACHINES_FACTOR 3
+
+#define MINERS_LIGHT_LEVEL_DECREASE_RATE 8
+
+#define WEAPON_KILLS_TO_AUTO_ID 2
+#define ARMOR_DELAY_TO_AUTO_ID  120
+#define RING_DELAY_TO_AUTO_ID   120
+
+#define SCROLL_ENCHANTING_POWER 2
+#define POTION_STRENGTH_POWER 2
+
+#define POTION_DARKNESS_EFFECT 400
+#define POTION_FIRE_IMMUNITY_DURATION 45
+#define POTION_HALLUCINATION_DURATION 45
+#define POTION_HASTE_SELF_DURATION 25
+#define POTION_INVISIBILITY_DURATION 30
+#define POTION_LEVITATION_DURATION 55
+#define POTION_TELEPATHY_DURATION 30
+
+#define ON_HIT_WEAKEN_DURATION 50          // duration of on-hit hallucination effect on player
+#define ON_HIT_HALLUCINATE_DURATION 10      // duration of on-hit hallucination effect on player
+#define ON_HIT_MERCY_HEAL_PERCENT 50        // percentage of damage healed on-hit by mercy weapon effect
+
+#define MUTATIONS_OCCUR_ABOVE_LEVEL 2
 
 #define PLAYER_TRANSFERENCE_RATIO 10        // player transference heal is (enchant / PLAYER_TRANSFERENCE_RATIO)
 #else
@@ -2455,6 +2497,11 @@ typedef struct playerCharacter {
     int enchantmentScrollsSpawned;
     int strengthPotionsSpawned;
     int detectMagicPotionsSpawned;
+#elif BULLET_BROGUE
+    int enchantmentScrollsSpawned;
+    int strengthPotionsSpawned;
+    int detectMagicPotionsSpawned;
+    int bonusWeaponsSpawned;
 #endif
 
     // ring bonuses:

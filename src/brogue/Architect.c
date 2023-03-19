@@ -1717,10 +1717,14 @@ void addMachines() {
 
     // Add reward rooms, if any:
     machineCount = 0;
-    while (rogue.depthLevel <= AMULET_LEVEL
 #ifdef RAPID_BROGUE
+    while (rogue.depthLevel <= AMULET_LEVEL
         && (rogue.rewardRoomsGenerated + machineCount) * 2 < rogue.depthLevel * MACHINES_FACTOR) {
+#elif BULLET_BROGUE
+    while (rogue.depthLevel < DEEPEST_LEVEL
+        && (rogue.rewardRoomsGenerated + machineCount) < rogue.depthLevel * MACHINES_FACTOR) {
 #else
+    while (rogue.depthLevel <= AMULET_LEVEL
         && (rogue.rewardRoomsGenerated + machineCount) * 4 + 2 < rogue.depthLevel * MACHINES_FACTOR) {
 #endif
         // try to build at least one every four levels on average
@@ -1728,6 +1732,10 @@ void addMachines() {
         machineCount++;
     }
 #ifdef RAPID_BROGUE
+    //Only emphasise the first level otherwise there's a famine of interesting rooms later
+    randomMachineFactor = (rogue.depthLevel < 2 && (rogue.rewardRoomsGenerated + machineCount) == 0 ? 40 : 15);
+    while (rand_percent(max(randomMachineFactor, 15 * MACHINES_FACTOR)) && machineCount < 100) {
+#elif BULLET_BROGUE
     //Only emphasise the first level otherwise there's a famine of interesting rooms later
     randomMachineFactor = (rogue.depthLevel < 2 && (rogue.rewardRoomsGenerated + machineCount) == 0 ? 40 : 15);
     while (rand_percent(max(randomMachineFactor, 15 * MACHINES_FACTOR)) && machineCount < 100) {
