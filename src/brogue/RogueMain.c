@@ -128,7 +128,11 @@ void welcome() {
     encodeMessageColor(buf, strlen(buf), &itemMessageColor);
     strcat(buf, "Amulet of Yendor");
     encodeMessageColor(buf, strlen(buf), &white);
+#ifdef BULLET_BROGUE
+    sprintf(buf2, " from the %ird floor and escape with it!", AMULET_LEVEL);
+#else
     sprintf(buf2, " from the %ith floor and escape with it!", AMULET_LEVEL);
+#endif
     strcat(buf, buf2);
     message(buf, 0);
     if (KEYBOARD_LABELS) {

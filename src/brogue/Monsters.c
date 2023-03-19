@@ -751,7 +751,7 @@ creature *spawnHorde(short hordeID, short x, short y, unsigned long forbiddenFla
     creature *leader, *preexistingMonst;
     boolean tryAgain;
 
-    if (rogue.depthLevel > 1 && rand_percent(10)) {
+    if (rogue.depthLevel > 1 && rand_percent(MONSTER_OOD_CHANCE)) {
         depth = rogue.depthLevel + rand_range(1, min(5, rogue.depthLevel / 2));
         if (depth > AMULET_LEVEL) {
             depth = max(rogue.depthLevel, AMULET_LEVEL);

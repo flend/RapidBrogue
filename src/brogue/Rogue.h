@@ -35,14 +35,22 @@
 // unicode: comment this line to revert to ASCII
 #define USE_UNICODE
 
+// Expanding a macro as a string constant requires two levels of macros
+#define _str(x) #x
+#define STRINGIFY(x) _str(x)
+
+// Macro to compare BROGUE_MAJOR.BROGUE_MINOR.patchVersion to a.b.c
+#ifdef RAPID_BROGUE
+#define BROGUE_CE_MAJOR 1
+#define BROGUE_CE_MINOR 12
+#define BROGUE_CE_PATCH 1
+
 // Brogue version number
 #define BROGUE_MAJOR 1
 #define BROGUE_MINOR 4
 #define BROGUE_PATCH 0
 
-// Expanding a macro as a string constant requires two levels of macros
-#define _str(x) #x
-#define STRINGIFY(x) _str(x)
+#define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_CE_MAJOR != (a) ? BROGUE_CE_MAJOR > (a) : BROGUE_CE_MINOR != (b) ? BROGUE_CE_MINOR > (b) : rogue.patchVersion >= (c))
 
 // Brogue version: what the user sees in the menu and title
 #define BROGUE_VERSION_STRING "RB " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) "." STRINGIFY(BROGUE_PATCH) BROGUE_EXTRA_VERSION
@@ -66,21 +74,71 @@ strings, but they are equal (rogue.patchLevel is set to 0).
 // Dungeon version. Used in seed catalog output.
 #define BROGUE_DUNGEON_VERSION_STRING "RB 1.4.0"
 
-// Macro to compare BROGUE_MAJOR.BROGUE_MINOR.patchVersion to a.b.c
-#ifdef RAPID_BROGUE
-#define BROGUE_CE_MAJOR 1
-#define BROGUE_CE_MINOR 12
-#define BROGUE_CE_PATCH 1
-
-#define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_CE_MAJOR != (a) ? BROGUE_CE_MAJOR > (a) : BROGUE_CE_MINOR != (b) ? BROGUE_CE_MINOR > (b) : rogue.patchVersion >= (c))
 #elif BULLET_BROGUE
 #define BROGUE_CE_MAJOR 1
 #define BROGUE_CE_MINOR 12
 #define BROGUE_CE_PATCH 1
 
+// Brogue version number
+#define BROGUE_MAJOR 1
+#define BROGUE_MINOR 0
+#define BROGUE_PATCH 0
+
 #define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_CE_MAJOR != (a) ? BROGUE_CE_MAJOR > (a) : BROGUE_CE_MINOR != (b) ? BROGUE_CE_MINOR > (b) : rogue.patchVersion >= (c))
+
+// Brogue version: what the user sees in the menu and title
+#define BROGUE_VERSION_STRING "BB " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) "." STRINGIFY(BROGUE_PATCH) BROGUE_EXTRA_VERSION
+
+// Recording version. Saved into recordings and save files made by this version.
+// Cannot be longer than 16 chars
+#define BROGUE_RECORDING_VERSION_STRING "BB " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) "." STRINGIFY(BROGUE_PATCH)
+
+/* Patch pattern. A scanf format string which matches an unsigned short. If this
+matches against a recording version string, it defines a "patch version." During
+normal play, rogue.patchVersion is set to the match of the game's recording
+version above, or 0 if it doesn't match.
+
+The game will only load a recording/save if either a) it has a patch version
+which is equal or less than the patch version of the current game
+(rogue.patchLevel is set to the recording's); or b) it doesn't match the version
+strings, but they are equal (rogue.patchLevel is set to 0).
+*/
+#define BROGUE_PATCH_VERSION_PATTERN "BB " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) ".%hu"
+
+// Dungeon version. Used in seed catalog output.
+#define BROGUE_DUNGEON_VERSION_STRING "BB 1.0.0"
+
 #else
+// Brogue version number
+#define BROGUE_MAJOR 1
+#define BROGUE_MINOR 12
+#define BROGUE_PATCH 1
+
 #define BROGUE_VERSION_ATLEAST(a,b,c) (BROGUE_MAJOR != (a) ? BROGUE_MAJOR > (a) : BROGUE_MINOR != (b) ? BROGUE_MINOR > (b) : rogue.patchVersion >= (c))
+
+// Brogue version: what the user sees in the menu and title
+#define BROGUE_VERSION_STRING "CE " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) "." STRINGIFY(BROGUE_PATCH) BROGUE_EXTRA_VERSION
+
+// Recording version. Saved into recordings and save files made by this version.
+// Cannot be longer than 16 chars
+#define BROGUE_RECORDING_VERSION_STRING "CE " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) "." STRINGIFY(BROGUE_PATCH)
+
+/* Patch pattern. A scanf format string which matches an unsigned short. If this
+matches against a recording version string, it defines a "patch version." During
+normal play, rogue.patchVersion is set to the match of the game's recording
+version above, or 0 if it doesn't match.
+
+The game will only load a recording/save if either a) it has a patch version
+which is equal or less than the patch version of the current game
+(rogue.patchLevel is set to the recording's); or b) it doesn't match the version
+strings, but they are equal (rogue.patchLevel is set to 0).
+*/
+#define BROGUE_PATCH_VERSION_PATTERN "CE " STRINGIFY(BROGUE_MAJOR) "." STRINGIFY(BROGUE_MINOR) ".%hu"
+
+// Dungeon version. Used in seed catalog output.
+#define BROGUE_DUNGEON_VERSION_STRING "CE 1.9"
+
+
 #endif
 
 #define DEBUG                           if (rogue.wizard)
@@ -216,6 +274,7 @@ typedef struct pos {
 #define ON_HIT_MERCY_HEAL_PERCENT 50        // percentage of damage healed on-hit by mercy weapon effect
 
 #define MUTATIONS_OCCUR_ABOVE_LEVEL 3
+#define MONSTER_OOD_CHANCE 10
 
 #define PLAYER_TRANSFERENCE_RATIO 10        // player transference heal is (enchant / PLAYER_TRANSFERENCE_RATIO)
 #elif BULLET_BROGUE
@@ -252,6 +311,7 @@ typedef struct pos {
 #define ON_HIT_MERCY_HEAL_PERCENT 50        // percentage of damage healed on-hit by mercy weapon effect
 
 #define MUTATIONS_OCCUR_ABOVE_LEVEL 2
+#define MONSTER_OOD_CHANCE 5
 
 #define PLAYER_TRANSFERENCE_RATIO 10        // player transference heal is (enchant / PLAYER_TRANSFERENCE_RATIO)
 #else
@@ -293,6 +353,7 @@ typedef struct pos {
 #define BOLT_INVISIBILITY_DURATION 150
 
 #define MUTATIONS_OCCUR_ABOVE_LEVEL 10
+#define MONSTER_OOD_CHANCE 10
 
 #define PLAYER_TRANSFERENCE_RATIO 20        // player transference heal is (enchant / PLAYER_TRANSFERENCE_RATIO)
 #endif
