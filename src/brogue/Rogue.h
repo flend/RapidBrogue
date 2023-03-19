@@ -236,8 +236,8 @@ typedef struct pos {
 #define ARMOR_DELAY_TO_AUTO_ID  120
 #define RING_DELAY_TO_AUTO_ID   120
 
-#define SCROLL_ENCHANTING_POWER 4
-#define POTION_STRENGTH_POWER 4
+#define SCROLL_ENCHANTING_POWER 2
+#define POTION_STRENGTH_POWER 2
 
 #define POTION_DARKNESS_EFFECT 400
 #define POTION_FIRE_IMMUNITY_DURATION 45
@@ -2501,6 +2501,7 @@ typedef struct playerCharacter {
     int enchantmentScrollsSpawned;
     int strengthPotionsSpawned;
     int detectMagicPotionsSpawned;
+    int bonusWeaponsSpawned;
 #endif
 
     // ring bonuses:

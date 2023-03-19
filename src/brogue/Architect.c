@@ -1717,12 +1717,14 @@ void addMachines() {
 
     // Add reward rooms, if any:
     machineCount = 0;
-    while (rogue.depthLevel <= AMULET_LEVEL
 #ifdef RAPID_BROGUE
+    while (rogue.depthLevel <= AMULET_LEVEL
         && (rogue.rewardRoomsGenerated + machineCount) * 2 < rogue.depthLevel * MACHINES_FACTOR) {
 #elif BULLET_BROGUE
+    while (rogue.depthLevel < DEEPEST_LEVEL
         && (rogue.rewardRoomsGenerated + machineCount) * 2 < rogue.depthLevel * MACHINES_FACTOR) {
 #else
+    while (rogue.depthLevel <= AMULET_LEVEL
         && (rogue.rewardRoomsGenerated + machineCount) * 4 + 2 < rogue.depthLevel * MACHINES_FACTOR) {
 #endif
         // try to build at least one every four levels on average

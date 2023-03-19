@@ -539,7 +539,7 @@ void populateItems(short upstairsX, short upstairsY) {
 #ifdef RAPID_BROGUE
         numberOfItems += 4; // 4 extra items in rapid brogue, accounting for extra guaranteed potions and scrolls. We also bias weights to consumables (since there are so many vaults)
 #elif BULLET_BROGUE
-        numberOfItems += 4; // 4 extra items in rapid brogue, accounting for extra guaranteed potions and scrolls. We also bias weights to consumables (since there are so many vaults)
+        numberOfItems += 8; // 8 extra items in bullet brogue, accounting for extra guaranteed potions and scrolls. We also bias weights to consumables (since there are so many vaults)
 #endif
 
         numberOfGoldPiles = min(5, rogue.depthLevel / 4 * DEPTH_ACCELERATOR);
@@ -675,18 +675,22 @@ void populateItems(short upstairsX, short upstairsY) {
             theKind = POTION_STRENGTH;
         }
 #elif BULLET_BROGUE
+        } else if (rogue.depthLevel < 3 && rogue.bonusWeaponsSpawned < rogue.depthLevel * 2) {
+            theCategory = WEAPON;
+            rogue.bonusWeaponsSpawned++;
+            if (D_MESSAGE_ITEM_GENERATION) printf("\n(!l) Depth %i: spawning bonus weapon", rogue.depthLevel);
         } else if (rogue.lifePotionsSpawned * 4 + 3 < rogue.depthLevel * 4 + randomDepthOffset) {
             theCategory = POTION;
             theKind = POTION_LIFE;
-        //Rapid brogue also guarantees a detect magic by level 2
-        } else if (rogue.detectMagicPotionsSpawned == 0 && rogue.depthLevel == 2) {
+        //Bullet brogue also guarantees a detect magic by level 1
+        } else if (rogue.detectMagicPotionsSpawned == 0 && rogue.depthLevel == 1) {
             theCategory = POTION;
             theKind = POTION_DETECT_MAGIC;
-        //Rapid brogue also guarantees roughly 1 strength and 1 enchantment scroll per level
-        } else if (rogue.enchantmentScrollsSpawned * 4 < rogue.depthLevel * 4 + randomDepthOffset) {
+        //Bullet brogue also guarantees roughly 2 strength and 2 enchantment scroll per level
+        } else if (rogue.enchantmentScrollsSpawned * 4 < rogue.depthLevel * 8 + randomDepthOffset) {
             theCategory = SCROLL;
             theKind = SCROLL_ENCHANTING;
-        } else if (rogue.strengthPotionsSpawned * 4 + 3 < rogue.depthLevel * 4 + randomDepthOffset) {
+        } else if (rogue.strengthPotionsSpawned * 4 + 3 < rogue.depthLevel * 8 + randomDepthOffset) {
             theCategory = POTION;
             theKind = POTION_STRENGTH;
         }
