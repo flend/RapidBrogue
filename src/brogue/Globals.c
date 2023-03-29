@@ -3251,7 +3251,7 @@ const hordeType hordeCatalog[NUMBER_HORDES] = {
     {MK_FLAME_TURRET,   0,      {0},                                    {{0}},                          2,     3,     100,        WALL,   0,                      HORDE_NO_PERIODIC_SPAWN},
     {MK_DAR_BLADEMASTER,2,      {MK_DAR_BLADEMASTER, MK_DAR_PRIESTESS}, {{0, 1, 1}, {0, 1, 1}},         3,     3,     100},
     {MK_PINK_JELLY,     2,      {MK_PINK_JELLY, MK_DAR_PRIESTESS},      {{0, 1, 1}, {1, 2, 1}},         2,     3,     70},
-    {MK_KRAKEN,         0,      {0},                                    {{0}},                          2,     4,     100,        DEEP_WATER},
+    {MK_KRAKEN,         0,      {0},                                    {{0}},                          3,     4,     100,        DEEP_WATER},
     {MK_PHANTOM,        0,      {0},                                    {{0}},                          3,     3,     100},
     {MK_WRAITH,         1,      {MK_WRAITH},                            {{1, 4, 1}},                    3,     3,     80},
     {MK_IMP,            0,      {0},                                    {{0}},                          3,     3,     100},

@@ -1,3 +1,12 @@
+BULLET BROGUE CHANGES
+=====================
+
+1.1.0
+=====
+
+-
+  Krakens now start spawning on L3, not L2
+
 RAPID BROGUE CHANGES
 ====================
 
