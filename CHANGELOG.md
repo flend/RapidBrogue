@@ -1,6 +1,12 @@
 RAPID BROGUE CHANGES
 ====================
 
+1.5.0
+=====
+
+-
+  Reduced duration of darkness effect
+
 1.4.0
 =====
 
