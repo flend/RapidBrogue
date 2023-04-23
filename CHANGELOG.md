@@ -6,6 +6,8 @@ BULLET BROGUE CHANGES
 
 -
   Krakens now start spawning on L3, not L2
+-
+  Reduced duration of darkness effect
 
 RAPID BROGUE CHANGES
 ====================
