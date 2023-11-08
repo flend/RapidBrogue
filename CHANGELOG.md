@@ -1,9 +1,10 @@
-RAPID BROGUE CHANGES
+13RAPID BROGUE CHANGES
 ====================
 
 1.5.0
 =====
-
+-
+  NOW INCLUDED IN THE CE 1.13 release - please get the official release at: https://github.com/tmewett/BrogueCE/releases
 -
   Reduced duration of darkness effect
 
