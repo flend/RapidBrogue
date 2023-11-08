@@ -1,4 +1,4 @@
-13RAPID BROGUE CHANGES
+RAPID BROGUE CHANGES
 ====================
 
 1.5.0
